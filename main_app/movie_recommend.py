@@ -239,7 +239,7 @@ st.markdown(f"""
 
     /* 7. HEADER LOGO */
     header[data-testid="stHeader"]::after {{
-        content: 'RECOMMEND WITH AI';
+        content: '🍿 Movie Recommender';
         color: {header_text_color};
         font-size: 20px;
         font-weight: 900;
@@ -330,7 +330,7 @@ def clear_results():
 st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
 # HEADER WITH PULSE EFFECT
-st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">🍿 Movie Recommender</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
 st.write("<div style='text-align: center; margin-bottom: 30px; opacity: 0.8;'>Discover your next favorite film using Group 4's AI Engine.</div>", unsafe_allow_html=True)
 
