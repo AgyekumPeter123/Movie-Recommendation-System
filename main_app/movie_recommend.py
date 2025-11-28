@@ -265,11 +265,6 @@ st.markdown(f"""
 
 # --- DATA LOADING ---
 @st.cache_data
-import os
-import pickle
-import gzip
-import pandas as pd
-
 def load_data():
     # Folder where this script exists
     BASE_PATH = os.path.dirname(__file__)
