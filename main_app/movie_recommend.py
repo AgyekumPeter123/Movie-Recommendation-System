@@ -265,18 +265,38 @@ st.markdown(f"""
 
 # --- DATA LOADING ---
 @st.cache_data
+import os
+import pickle
+import gzip
+import pandas as pd
+
 def load_data():
-    movie_dict = pickle.load(open('movie_dict.pkl', 'rb'))
-    # Load compressed content similarity matrix
-    with gzip.open('similarity.pkl.gz', 'rb') as f:
+    # Folder where this script exists
+    BASE_PATH = os.path.dirname(__file__)
+
+    # Normal pickle files
+    movie_dict_path = os.path.join(BASE_PATH, 'movie_dict.pkl')
+    collab_titles_path = os.path.join(BASE_PATH, 'collab_titles.pkl')
+
+    # Compressed files
+    content_sim_path = os.path.join(BASE_PATH, 'similarity.pkl.gz')
+    collab_sim_path = os.path.join(BASE_PATH, 'collab_similarity.pkl.gz')
+
+    # Load files
+    movie_dict = pickle.load(open(movie_dict_path, 'rb'))
+    collab_titles = pickle.load(open(collab_titles_path, 'rb'))
+
+    with gzip.open(content_sim_path, 'rb') as f:
         content_sim = pickle.load(f)
-    # Load compressed collaborative similarity matrix
-    with gzip.open('collab_similarity.pkl.gz', 'rb') as f:
+
+    with gzip.open(collab_sim_path, 'rb') as f:
         collab_sim = pickle.load(f)
-    collab_titles = pickle.load(open('collab_titles.pkl', 'rb'))
-    return pd.DataFrame(movie_dict), content_sim, collab_sim, collab_titles
+
+    movies_df = pd.DataFrame(movie_dict)
+    return movies_df, content_sim, collab_sim, collab_titles
 
 movies_df, content_similarity, collab_similarity, collab_titles = load_data()
+
 
 # --- LOGIC ---
 if st.session_state.last_method != filter_method:
