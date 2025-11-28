@@ -239,7 +239,7 @@ st.markdown(f"""
 
     /* 7. HEADER LOGO */
     header[data-testid="stHeader"]::after {{
-        content: 'TECH. SOLUTION';
+        content: 'G4 SOLUTION';
         color: {header_text_color};
         font-size: 20px;
         font-weight: 900;
