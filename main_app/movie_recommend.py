@@ -1,8 +1,10 @@
 
-import streamlit as st
+import os
 import pickle
-import pandas as pd
 import gzip
+import pandas as pd
+import streamlit as st
+
 
 st.set_page_config(
     page_title="Group 4 - Movie Recommender",
