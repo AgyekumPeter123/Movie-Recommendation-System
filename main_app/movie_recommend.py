@@ -160,6 +160,14 @@ st.markdown(f"""
         display: flex;
         align-items: center;
         height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transition added */
+    }}
+
+    /* HOVER EFFECT ADDED HERE */
+    .rec-card:hover {{
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(255, 75, 75, 0.3);
+        border-color: #FF4B4B;
     }}
 
     header[data-testid="stHeader"]::after {{
