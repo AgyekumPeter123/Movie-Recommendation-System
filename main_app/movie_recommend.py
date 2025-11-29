@@ -247,7 +247,7 @@ def get_recommendations(movie, method):
         for i in scores:
             if method == 'Content-Based Filtering':
                 movie_title = titles.iloc[i[0]].title
-<<<<<<< HEAD
+
                 # FETCH OVERVIEW
                 try:
                     movie_info = titles.iloc[i[0]].overview
@@ -262,20 +262,6 @@ def get_recommendations(movie, method):
                     movie_info = "No overview available for this title."
             
             result.append({'title': movie_title, 'info': movie_info})
-=======
-                # Fetch tags directly
-                movie_tags = titles.iloc[i[0]].tags
-            else:
-                movie_title = collab_titles[i[0]]
-                # Try to find tags in the main DF even for collaborative results
-                try:
-                    movie_tags = movies_df[movies_df['title'] == movie_title]['tags'].values[0]
-                except:
-                    movie_tags = "No details available for this title."
-            
-            # Append dictionary instead of just string
-            result.append({'title': movie_title, 'tags': movie_tags})
->>>>>>> 30fd10da5e0cf50b80598419058c9dd0ea34e978
             
         return result
     except:
