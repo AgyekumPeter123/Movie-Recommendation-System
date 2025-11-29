@@ -210,6 +210,7 @@ if st.session_state.last_method != filter_method:
     st.session_state.selected_movie_name = None
     st.session_state.last_method = filter_method
 
+<<<<<<< HEAD
 # NEW: Dialog now shows Plot Overview
 @st.dialog("🎬 Movie Overview")
 def show_movie_details(title, overview):
@@ -218,6 +219,17 @@ def show_movie_details(title, overview):
     st.caption("Plot summary from TMDB Database.")
 
 # UPDATED: Fetches 'overview' instead of 'tags'
+=======
+# NEW: Dialog Function for "About" - Updated Label to "Tags"
+@st.dialog("🎬 Movie Details")
+def show_movie_details(title, tags):
+    st.header(title)
+    st.markdown("**Tags:**") # Label changed here
+    st.info(tags)
+    st.caption("These tags are used by the AI to find similarities.")
+
+# UPDATED: get_recommendations now returns dictionary with Title AND Tags
+>>>>>>> 30fd10da5e0cf50b80598419058c9dd0ea34e978
 def get_recommendations(movie, method):
     try:
         if method == 'Content-Based Filtering':
@@ -235,6 +247,7 @@ def get_recommendations(movie, method):
         for i in scores:
             if method == 'Content-Based Filtering':
                 movie_title = titles.iloc[i[0]].title
+<<<<<<< HEAD
                 # FETCH OVERVIEW
                 try:
                     movie_info = titles.iloc[i[0]].overview
@@ -249,6 +262,20 @@ def get_recommendations(movie, method):
                     movie_info = "No overview available for this title."
             
             result.append({'title': movie_title, 'info': movie_info})
+=======
+                # Fetch tags directly
+                movie_tags = titles.iloc[i[0]].tags
+            else:
+                movie_title = collab_titles[i[0]]
+                # Try to find tags in the main DF even for collaborative results
+                try:
+                    movie_tags = movies_df[movies_df['title'] == movie_title]['tags'].values[0]
+                except:
+                    movie_tags = "No details available for this title."
+            
+            # Append dictionary instead of just string
+            result.append({'title': movie_title, 'tags': movie_tags})
+>>>>>>> 30fd10da5e0cf50b80598419058c9dd0ea34e978
             
         return result
     except:
@@ -292,27 +319,47 @@ if st.session_state.recommendations:
     st.markdown("---")
     st.subheader(f"Because you liked '{st.session_state.selected_movie_name}':")
 
+<<<<<<< HEAD
     for movie_data in st.session_state.recommendations:
         c_card, c_btn = st.columns([5, 1])
+=======
+    # UPDATED: Loop through dictionaries and show buttons
+    for movie_data in st.session_state.recommendations:
+        c_card, c_btn = st.columns([5, 1]) # Layout: Card takes 5 parts, Button takes 1 part
+>>>>>>> 30fd10da5e0cf50b80598419058c9dd0ea34e978
         
         with c_card:
             st.markdown(f'<div class="rec-card">🎬 {movie_data["title"]}</div>', unsafe_allow_html=True)
         
         with c_btn:
+<<<<<<< HEAD
             st.write("") 
             # Updated button to say "About" but show the Plot
             if st.button("ℹ️ About", key=f"btn_{movie_data['title']}", help="Read Plot"):
                 show_movie_details(movie_data['title'], movie_data['info'])
+=======
+            # Vertical alignment spacer
+            st.write("") 
+            if st.button("ℹ️ About", key=f"btn_{movie_data['title']}", help="See tags"):
+                show_movie_details(movie_data['title'], movie_data['tags'])
+>>>>>>> 30fd10da5e0cf50b80598419058c9dd0ea34e978
 
     st.markdown("---")
     st.header("📥 Save & Watch")
     col_export, col_watch = st.columns([1, 2])
 
     with col_export:
+<<<<<<< HEAD
         # Export now includes the Plot Overview
         export_text = f"Movie Recommender Results (Group 4)\nSelected Movie: {st.session_state.selected_movie_name}\n\nRecommendations:\n"
         for i, movie_data in enumerate(st.session_state.recommendations, 1):
             export_text += f"{i}. {movie_data['title']}\n   Plot: {movie_data['info']}\n"
+=======
+        # UPDATED: Export text to use "Tags"
+        export_text = f"Movie Recommender Results (Group 4)\nSelected Movie: {st.session_state.selected_movie_name}\n\nRecommendations:\n"
+        for i, movie_data in enumerate(st.session_state.recommendations, 1):
+            export_text += f"{i}. {movie_data['title']}\n   Tags: {movie_data['tags'][:100]}...\n" # Label changed here
+>>>>>>> 30fd10da5e0cf50b80598419058c9dd0ea34e978
             
         export_text += f"\nWhere to Watch:\n"
         for name, url in external_links.items():
