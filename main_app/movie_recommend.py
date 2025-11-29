@@ -217,11 +217,11 @@ if st.session_state.last_method != filter_method:
     st.session_state.selected_movie_name = None
     st.session_state.last_method = filter_method
 
-# NEW: Dialog Function for "About"
+# NEW: Dialog Function for "About" - Updated Label to "Tags"
 @st.dialog("🎬 Movie Details")
 def show_movie_details(title, tags):
     st.header(title)
-    st.markdown("**Tags & Keywords:**")
+    st.markdown("**Tags:**") # Label changed here
     st.info(tags)
     st.caption("These tags are used by the AI to find similarities.")
 
@@ -316,10 +316,10 @@ if st.session_state.recommendations:
     col_export, col_watch = st.columns([1, 2])
 
     with col_export:
-        # UPDATED: Export text to include Tags
+        # UPDATED: Export text to use "Tags"
         export_text = f"Movie Recommender Results (Group 4)\nSelected Movie: {st.session_state.selected_movie_name}\n\nRecommendations:\n"
         for i, movie_data in enumerate(st.session_state.recommendations, 1):
-            export_text += f"{i}. {movie_data['title']}\n   Details: {movie_data['tags'][:100]}...\n" # Truncated tags for neatness
+            export_text += f"{i}. {movie_data['title']}\n   Tags: {movie_data['tags'][:100]}...\n" # Label changed here
             
         export_text += f"\nWhere to Watch:\n"
         for name, url in external_links.items():
