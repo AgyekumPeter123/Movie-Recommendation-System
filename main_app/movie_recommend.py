@@ -239,10 +239,10 @@ def main_app():
 
         st.divider()
 
-        # 3. Engine Selection (Blank Space Above Fix)
-        # We removed the header. Now the radio is just below the divider.
+        # 3. Engine Selection (Text "Select" removed)
+        st.markdown("### ⚙️ Engine")
         filter_method = st.radio(
-            "Engine Selection", 
+            "Engine", # Internal label, hidden by collapsed visibility
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
@@ -396,11 +396,10 @@ def main_app():
             color: #000000 !important;
         }}
 
-        /* MODERN RADIO BUTTON - REMOVE EMPTY SPACE */
+        /* MODERN RADIO BUTTON */
         [data-testid="stSidebar"] .stRadio > div {{
             flex-direction: row;
             gap: 10px;
-            margin-top: -20px; /* Pulls it up to remove the gap from hidden label */
         }}
         [data-testid="stSidebar"] .stRadio label {{
             background-color: #f0f2f6 !important;
@@ -478,15 +477,15 @@ def main_app():
         }}
         @keyframes glow {{ from {{ text-shadow: 0 0 2px {input_label_color}; }} to {{ text-shadow: 0 0 10px #FF4B4B; }} }}
         
-        /* CONSTANT PULSE ANIMATION FOR HEADER */
-        @keyframes pulse-header {{
+        /* CONSTANT PULSE ANIMATION FOR HEADER (BREATHING EFFECT) */
+        @keyframes breathing {{
             0% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.03); text-shadow: 0 0 10px rgba(255, 75, 75, 0.3); }}
+            50% {{ transform: scale(1.05); text-shadow: 0 0 15px rgba(255, 75, 75, 0.5); }}
             100% {{ transform: scale(1); }}
         }}
         
         .main-header {{
-            animation: pulse-header 3s infinite ease-in-out; 
+            animation: breathing 3s infinite ease-in-out; 
             display: inline-block; 
         }}
 
@@ -555,7 +554,7 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    # UPDATED HEADER WITH CONSTANT ANIMATION CLASS
+    # UPDATED HEADER WITH CONSTANT BREATHING ANIMATION
     st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
