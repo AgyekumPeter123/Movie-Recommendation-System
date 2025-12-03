@@ -242,7 +242,6 @@ def main_app():
         # 3. Engine Selection (Text "Select Engine" removed)
         st.markdown("### ⚙️ Engine")
         filter_method = st.radio(
-            "Engine Selection", # Internal label only
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
