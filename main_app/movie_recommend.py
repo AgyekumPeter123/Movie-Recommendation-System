@@ -6,6 +6,7 @@ import streamlit as st
 import json
 import hashlib
 import uuid
+import ast
 from datetime import datetime
 
 # --- PAGE CONFIG ---
@@ -174,6 +175,21 @@ def main_app():
 
     movies_df, content_similarity, collab_similarity, collab_titles = load_data()
 
+    # --- HELPER FUNCTION: FIND MOVIE ROW ROBUSTLY ---
+    def find_movie_row(df, title):
+        # 1. Exact match (case-insensitive, strip spaces)
+        match = df[df['title'].str.lower().str.strip() == title.lower().strip()]
+        if not match.empty:
+            return match.iloc[0]
+
+        # 2. Fallback -> partial match (safe regex)
+        # We use regex=False to ensure special characters like ( ) in titles don't crash it
+        match = df[df['title'].str.contains(title, case=False, na=False, regex=False)]
+        if not match.empty:
+            return match.iloc[0]
+
+        return None
+
     # --- SESSION STATE ---
     if 'recommendations' not in st.session_state:
         st.session_state.recommendations = None
@@ -240,7 +256,6 @@ def main_app():
         st.divider()
         
         # --- DARK MODE TOGGLE ---
-        # Note: We read this value immediately to apply CSS
         dark_mode = st.toggle("🌙 Dark Mode", value=True)
 
     # --- THEME COLORS & LOGIC ---
@@ -251,7 +266,6 @@ def main_app():
         input_label_color = "#ffffff"
         card_bg = "rgba(255, 255, 255, 0.05)"
         card_border = "rgba(255, 255, 255, 0.1)"
-        # Button specific colors for Dark Mode
         btn_text_color = "#ffffff" 
         btn_bg = "#262730"
     else:
@@ -261,7 +275,6 @@ def main_app():
         input_label_color = "#8B0000"
         card_bg = "rgba(0, 0, 0, 0.02)"
         card_border = "rgba(0, 0, 0, 0.05)"
-        # Button specific colors for Light Mode
         btn_text_color = "#000000"
         btn_bg = "#f0f2f6"
 
@@ -369,15 +382,16 @@ def main_app():
 
     def get_recommendations(movie, method):
         try:
-            # 1. Get List of Recommended Titles based on Method
             recommended_titles = []
-            
+
+            # ---- 1. SELECT ENGINE ----
             if method == 'Content-Based Filtering':
                 idx = movies_df[movies_df['title'] == movie].index[0]
                 sim = content_similarity[idx]
                 scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
                 for i in scores:
                     recommended_titles.append(movies_df.iloc[i[0]].title)
+
             else:
                 # Collaborative
                 idx = list(collab_titles).index(movie)
@@ -386,42 +400,44 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(collab_titles[i[0]])
 
-            # 2. Fetch Details for each Title from the Main DataFrame
+            # ---- 2. FETCH DETAILS (Universal Lookup) ----
             result = []
             for title in recommended_titles:
-                # Find the row in movies_df that matches the title
-                match = movies_df[movies_df['title'] == title]
                 
-                if not match.empty:
-                    row = match.iloc[0]
-                    
-                    # Get Overview
-                    try: 
-                        movie_info = row.overview if pd.notna(row.overview) else "No overview available."
-                    except: 
+                # Use the robust find function
+                row = find_movie_row(movies_df, title)
+
+                if row is not None:
+                    # Overview
+                    movie_info = row.get("overview", "No overview available.")
+                    if pd.isna(movie_info):
                         movie_info = "No overview available."
-                    
-                    # Get Genre
-                    try:
-                        # Check for 'genres' first, then 'genre'
-                        if 'genres' in row.index:
-                            raw_genre = row.genres
-                        elif 'genre' in row.index:
-                            raw_genre = row.genre
-                        else:
-                            raw_genre = "Unknown"
-                            
-                        # Clean up list string formatting e.g. "['Action', 'Comedy']" -> "Action, Comedy"
-                        movie_genre = str(raw_genre).replace("[", "").replace("]", "").replace("'", "").replace('"', "")
-                    except:
+
+                    # Genre (Universal Extraction)
+                    genre_fields = ["genres", "genre", "genre_names", "listed_in"]
+                    raw_genre = None
+                    for field in genre_fields:
+                        if field in row.index and pd.notna(row[field]):
+                            raw_genre = row[field]
+                            break
+
+                    if raw_genre:
+                        movie_genre = str(raw_genre).replace("[","").replace("]","").replace("'","").replace('"',"")
+                    else:
                         movie_genre = "Genre: N/A"
+
                 else:
-                    movie_info = "No details found in database."
+                    movie_info = "No overview available."
                     movie_genre = "Genre: N/A"
 
-                result.append({'title': title, 'info': movie_info, 'genre': movie_genre})
-                
+                result.append({
+                    'title': title,
+                    'info': movie_info,
+                    'genre': movie_genre
+                })
+
             return result
+
         except Exception as e:
             st.error(f"Error: {e}")
             return []
