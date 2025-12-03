@@ -239,9 +239,10 @@ def main_app():
 
         st.divider()
 
-        # 3. Engine Selection (Blank Space Above)
+        # 3. Engine Selection (Blank Space Above Fix)
+        # We removed the header. Now the radio is just below the divider.
         filter_method = st.radio(
-            " ", # Internal label set to space to remove "Select"
+            "Engine Selection", 
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
@@ -395,10 +396,11 @@ def main_app():
             color: #000000 !important;
         }}
 
-        /* MODERN RADIO BUTTON */
+        /* MODERN RADIO BUTTON - REMOVE EMPTY SPACE */
         [data-testid="stSidebar"] .stRadio > div {{
             flex-direction: row;
             gap: 10px;
+            margin-top: -20px; /* Pulls it up to remove the gap from hidden label */
         }}
         [data-testid="stSidebar"] .stRadio label {{
             background-color: #f0f2f6 !important;
@@ -484,8 +486,8 @@ def main_app():
         }}
         
         .main-header {{
-            animation: pulse-header 3s infinite ease-in-out; /* Constant breathing animation */
-            display: inline-block; /* Helps animation smoothness */
+            animation: pulse-header 3s infinite ease-in-out; 
+            display: inline-block; 
         }}
 
         .stDeployButton {{ visibility: hidden; }}
