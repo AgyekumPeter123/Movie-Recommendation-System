@@ -37,7 +37,7 @@ def save_db(data):
 def hash_password(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
-# --- PASSWORD STRENGTH CHECK (NEW) ---
+# --- PASSWORD STRENGTH CHECK ---
 def check_password_strength(password):
     if len(password) < 6:
         return False, "⚠️ Password must be at least 6 characters."
@@ -154,6 +154,16 @@ def login_page():
             st.markdown("##### New User?")
             s_user = st.text_input("Choose Username", key="s_user")
             s_pass = st.text_input("Choose Password", type="password", key="s_pass")
+            
+            # --- PASSWORD REQUIREMENTS DISPLAY ---
+            st.markdown("""
+            <div style="font-size: 0.8rem; color: gray; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #FF4B4B;">
+                <strong>Password Rules:</strong><br>
+                • Minimum 6 characters<br>
+                • At least 1 Number (0-9)<br>
+                • At least 1 Uppercase Letter (A-Z)
+            </div>
+            """, unsafe_allow_html=True)
             
             if st.button("✨ Create Account", use_container_width=True):
                 if s_user and s_pass:
@@ -458,6 +468,7 @@ def main_app():
             color: {text_color};
         }}
 
+        /* INPUT LABELS */
         div[data-testid="stSelectbox"] > label {{
             color: {input_label_color} !important;
             font-weight: 900 !important;
@@ -466,6 +477,18 @@ def main_app():
         }}
         @keyframes glow {{ from {{ text-shadow: 0 0 2px {input_label_color}; }} to {{ text-shadow: 0 0 10px #FF4B4B; }} }}
         
+        /* CONSTANT PULSE ANIMATION FOR HEADER */
+        @keyframes pulse-header {{
+            0% {{ transform: scale(1); }}
+            50% {{ transform: scale(1.03); text-shadow: 0 0 10px rgba(255, 75, 75, 0.3); }}
+            100% {{ transform: scale(1); }}
+        }}
+        
+        .main-header {{
+            animation: pulse-header 3s infinite ease-in-out; /* Constant breathing animation */
+            display: inline-block; /* Helps animation smoothness */
+        }}
+
         .stDeployButton {{ visibility: hidden; }}
         </style>
     """, unsafe_allow_html=True)
@@ -531,7 +554,8 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    st.markdown('<h2 style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
+    # UPDATED HEADER WITH CONSTANT ANIMATION CLASS
+    st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
         if filter_method == 'Content-Based Filtering':
