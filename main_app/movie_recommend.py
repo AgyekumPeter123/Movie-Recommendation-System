@@ -6,6 +6,7 @@ import streamlit as st
 import json
 import hashlib
 import uuid
+import ast
 from datetime import datetime
 
 # --- PAGE CONFIG ---
@@ -21,7 +22,6 @@ USER_DB_FILE = 'user_database.json'
 # --- AUTHENTICATION & DATA FUNCTIONS ---
 
 def load_db():
-    """Load user data from JSON file."""
     if not os.path.exists(USER_DB_FILE):
         return {}
     try:
@@ -31,12 +31,10 @@ def load_db():
         return {}
 
 def save_db(data):
-    """Save user data to JSON file."""
     with open(USER_DB_FILE, 'w') as f:
         json.dump(data, f, indent=4)
 
 def hash_password(password):
-    """Simple hash for security."""
     return hashlib.sha256(str.encode(password)).hexdigest()
 
 def register_user(username, password):
@@ -44,7 +42,7 @@ def register_user(username, password):
     if username in db:
         return False, "Username already exists!"
     
-    user_id = str(uuid.uuid4())[:8] # Simple 8-char User ID
+    user_id = str(uuid.uuid4())[:8]
     db[username] = {
         'password': hash_password(password),
         'user_id': user_id,
@@ -57,13 +55,11 @@ def authenticate_user(username, password):
     db = load_db()
     if username not in db:
         return False, None
-    
     if db[username]['password'] == hash_password(password):
         return True, db[username]
     return False, None
 
 def save_user_history(username, selected_movie, recommendations):
-    """Saves the search result to the user's specific history."""
     db = load_db()
     if username in db:
         entry = {
@@ -75,10 +71,18 @@ def save_user_history(username, selected_movie, recommendations):
         save_db(db)
 
 def delete_user_account(username):
-    """Deletes the user from the database."""
     db = load_db()
     if username in db:
         del db[username]
+        save_db(db)
+        return True
+    return False
+
+def clear_user_history(username):
+    """Clears history for the specific user instantly."""
+    db = load_db()
+    if username in db:
+        db[username]['history'] = []
         save_db(db)
         return True
     return False
@@ -91,7 +95,7 @@ if 'username' not in st.session_state:
 if 'user_info' not in st.session_state:
     st.session_state.user_info = None
 
-# --- EXTERNAL LINKS DATA ---
+# --- EXTERNAL LINKS ---
 external_links = {
     "Nkiri (Download)": "https://thenkiri.com",
     "Fzmovies (Download)": "https://fzmovie.co.za",
@@ -99,45 +103,54 @@ external_links = {
     "MovieBox (Stream)": "https://moviebox.ph"
 }
 
-# --- LOGIN / SIGNUP PAGE ---
+# --- LOGIN / SIGNUP PAGE (MODERNIZED) ---
 def login_page():
-    st.markdown("<h1 style='text-align: center; color: #FF4B4B;'>🔐 Group 4 Access</h1>", unsafe_allow_html=True)
+    # Centered Layout with Columns
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    tab1, tab2 = st.tabs(["Login", "Sign Up"])
-
-    with tab1:
-        st.subheader("Welcome Back")
-        l_user = st.text_input("Username", key="l_user")
-        l_pass = st.text_input("Password", type="password", key="l_pass")
+    with col2:
+        st.markdown("""
+        <div style="background-color: rgba(255, 75, 75, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(255, 75, 75, 0.2); text-align: center; margin-bottom: 20px;">
+            <h1 style='color: #FF4B4B; margin:0;'>🍿 Group 4 Cinema</h1>
+            <p style='margin:0; opacity: 0.7;'>Login to access your personalized AI recommendations</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        if st.button("Login", type="primary", use_container_width=True):
-            if l_user and l_pass:
-                is_valid, user_data = authenticate_user(l_user, l_pass)
-                if is_valid:
-                    st.session_state.logged_in = True
-                    st.session_state.username = l_user
-                    st.session_state.user_info = user_data
-                    st.success("Login Successful!")
-                    st.rerun()
-                else:
-                    st.error("Invalid Username or Password")
-            else:
-                st.warning("Please enter all fields")
+        tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
 
-    with tab2:
-        st.subheader("Create an Account")
-        s_user = st.text_input("Choose Username", key="s_user")
-        s_pass = st.text_input("Choose Password", type="password", key="s_pass")
-        
-        if st.button("Sign Up", use_container_width=True):
-            if s_user and s_pass:
-                success, msg = register_user(s_user, s_pass)
-                if success:
-                    st.success(f"Account created! Your User ID is: {msg}. Please Login.")
+        with tab1:
+            st.markdown("##### Welcome Back")
+            l_user = st.text_input("Username", key="l_user")
+            l_pass = st.text_input("Password", type="password", key="l_pass")
+            
+            if st.button("🚀 Enter App", type="primary", use_container_width=True):
+                if l_user and l_pass:
+                    is_valid, user_data = authenticate_user(l_user, l_pass)
+                    if is_valid:
+                        st.session_state.logged_in = True
+                        st.session_state.username = l_user
+                        st.session_state.user_info = user_data
+                        st.success("Login Successful!")
+                        st.rerun()
+                    else:
+                        st.error("Invalid credentials.")
                 else:
-                    st.error(msg)
-            else:
-                st.warning("Please enter all fields")
+                    st.warning("Please fill all fields.")
+
+        with tab2:
+            st.markdown("##### New User?")
+            s_user = st.text_input("Choose Username", key="s_user")
+            s_pass = st.text_input("Choose Password", type="password", key="s_pass")
+            
+            if st.button("✨ Create Account", use_container_width=True):
+                if s_user and s_pass:
+                    success, msg = register_user(s_user, s_pass)
+                    if success:
+                        st.success(f"Account created! ID: {msg}. Please Login.")
+                    else:
+                        st.error(msg)
+                else:
+                    st.warning("Please fill all fields.")
 
 # --- MAIN APP LOGIC ---
 def main_app():
@@ -164,7 +177,7 @@ def main_app():
 
     movies_df, content_similarity, collab_similarity, collab_titles = load_data()
 
-    # --- SESSION STATE FOR APP ---
+    # --- SESSION STATE ---
     if 'recommendations' not in st.session_state:
         st.session_state.recommendations = None
     if 'selected_movie_name' not in st.session_state:
@@ -174,219 +187,158 @@ def main_app():
 
     # --- SIDEBAR ---
     with st.sidebar:
-        # USER INFO DISPLAY
-        st.success(f"👤 **User:** {st.session_state.username}")
+        st.success(f"👤 **{st.session_state.username}**")
         st.caption(f"ID: {st.session_state.user_info.get('user_id', 'N/A')}")
         
         col_logout, col_del = st.columns([1, 1])
-        
         with col_logout:
             if st.button("🚪 Logout", use_container_width=True):
                 st.session_state.logged_in = False
                 st.session_state.username = None
                 st.rerun()
 
-        # --- DELETE ACCOUNT DIALOG ---
         @st.dialog("⚠️ Delete Account")
         def delete_account_dialog():
-            st.warning("Are you sure? This action cannot be undone.")
-            st.write("This will permanently delete your account and all search history.")
-            
-            if st.button("Yes, Delete Everything", type="primary"):
+            st.warning("Permanently delete account and history?")
+            if st.button("Yes, Delete", type="primary"):
                 if delete_user_account(st.session_state.username):
                     st.session_state.logged_in = False
                     st.session_state.username = None
                     st.rerun()
-                else:
-                    st.error("Error deleting account.")
 
         with col_del:
-            if st.button("❌ Delete", type="primary", use_container_width=True, help="Delete Account"):
+            if st.button("❌ Delete", type="primary", use_container_width=True):
                 delete_account_dialog()
 
         st.divider()
-        
-        # Original Sidebar Content
-        st.markdown("""
-            <div style="text-align: center; font-weight: 800; font-size: 2rem;
-                        padding: 10px; border: 2px solid #FF4B4B; border-radius: 15px;
-                        background: rgba(255, 75, 75, 0.1); backdrop-filter: blur(5px);
-                        margin-bottom: 20px;">
-                GROUP 4
-            </div>
-        """, unsafe_allow_html=True)
-
         st.markdown("### ⚙️ Engine")
-        filter_method = st.radio(
-            "Select Method:",
-            ('Content-Based Filtering', 'Collaborative Filtering'),
-            label_visibility="collapsed"
-        )
-
+        filter_method = st.radio("Method:", ('Content-Based Filtering', 'Collaborative Filtering'), label_visibility="collapsed")
+        
         st.divider()
         
-        # --- HISTORY SECTION WITH REFRESH ---
-        # Using columns to put header and refresh button side-by-side
-        hist_col1, hist_col2 = st.columns([4, 1])
-        with hist_col1:
+        # --- HISTORY & CLEAR BUTTON ---
+        h_col1, h_col2 = st.columns([3, 2])
+        with h_col1:
             st.markdown("### 📜 History")
-        with hist_col2:
-            # Empty container for refresh button just to trigger rerun logic naturally
-            if st.button("🔄", help="Refresh History"):
-                pass # The act of clicking reruns the script, thus reloading the DB below
+        with h_col2:
+            if st.button("🗑️ Clear", help="Clear History"):
+                clear_user_history(st.session_state.username)
+                st.rerun()
 
-        with st.expander("View Recent Activity", expanded=True):
-            db = load_db() # Reloads DB fresh on every run (including refresh click)
+        with st.expander("Recent Activity", expanded=True):
+            db = load_db()
             history = db.get(st.session_state.username, {}).get('history', [])
-            
             if not history:
-                st.write("No history yet.")
+                st.caption("No history found.")
             else:
-                for h in reversed(history[-5:]): # Show last 5
+                for h in reversed(history[-5:]):
                     st.markdown(f"**🎬 {h['selected_movie']}**")
-                    st.caption(f"🕒 {h['timestamp']}")
+                    st.caption(f"{h['timestamp']}")
                     st.markdown("---")
 
         st.divider()
-
-        st.markdown("### 🚀 Quick Links")
-        st.link_button("💬 Join WhatsApp Team", "https://chat.whatsapp.com/DsyWXB9DzG19CbTjK8dKhF?mode=hqrt2", use_container_width=True)
-        st.link_button("📂 Access Notebook", "https://colab.research.google.com/drive/1XvRHy3z1cDWH51EuRegY_i-FWH2t2ypn?usp=drive_link", use_container_width=True)
-        st.link_button("📚 Study With Thrive Africa", "https://thriveafrica.co/campus", use_container_width=True)
-
+        st.markdown("### 🚀 Links")
+        st.link_button("💬 WhatsApp", "https://chat.whatsapp.com/DsyWXB9DzG19CbTjK8dKhF?mode=hqrt2", use_container_width=True)
+        st.link_button("📚 Thrive Africa", "https://thriveafrica.co/campus", use_container_width=True)
         st.divider()
-
-        with st.expander("👥 Meet the Team"):
-            team = [
-                "1. Peter Agyekum", "2. Felicia I. Nduefuna", "3. Olivia Mawufemor Attipoe",
-                "4. Donkor Promise Esi Rhoda", "5. Osborn Tulasi", "6. Onipayede John Kwaku",
-                "7. Peter Agyekum Boateng", "8. Aning Jason", "9. Maxwell Adu",
-                "10. Michael Nyarku", "11. Yeboah Eldad"
-            ]
-            for member in team:
-                st.write(member)
-
         dark_mode = st.toggle("🌙 Dark Mode")
 
-    # --- THEME LOGIC ---
+    # --- THEME COLORS ---
     if dark_mode:
         main_bg = "#0e1117"
         text_color = "#ffffff"
-        label_color = "#FF4B4B" 
-        input_label_color = "#ffffff" 
-        header_bg = "#FF4B4B"
-        header_text_color = "#ffffff"
+        label_color = "#FF4B4B"
+        input_label_color = "#ffffff"
         card_bg = "rgba(255, 255, 255, 0.05)"
         card_border = "rgba(255, 255, 255, 0.1)"
-        btn_text_color = "#000000"
-        btn_bg = "#f0f2f6"
-        btn_hover_text = "#FF4B4B"
-        sidebar_arrow_color = "#FF4B4B"
-        sidebar_border = "none"
     else:
         main_bg = "#ffffff"
         text_color = "#000000"
-        label_color = "#FF4B4B" 
-        input_label_color = "#8B0000" 
-        header_bg = "#ffffff"
-        header_text_color = "#FF4B4B"
+        label_color = "#FF4B4B"
+        input_label_color = "#8B0000"
         card_bg = "rgba(0, 0, 0, 0.02)"
         card_border = "rgba(0, 0, 0, 0.05)"
-        btn_text_color = "#000000"
-        btn_bg = "#f0f2f6"
-        btn_hover_text = "#FF4B4B"
-        sidebar_arrow_color = "#000000"
-        sidebar_border = "1px solid rgba(0, 0, 0, 0.1)"
 
     # --- CSS ---
     st.markdown(f"""
         <style>
         .stApp {{ background-color: {main_bg}; color: {text_color}; }}
-        header[data-testid="stHeader"] {{ background-color: {header_bg} !important; border-bottom: 1px solid {card_border}; }}
         
-        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label, [data-testid="stSidebar"] div, [data-testid="stSidebar"] .stRadio label {{ color: #000000 !important; }}
-        [data-testid="stSidebar"] {{ background-color: #ffffff !important; border-right: {sidebar_border}; }}
-        [data-testid="stSidebar"] .stLinkButton a {{ color: {btn_text_color} !important; }}
-
-        .stButton button, .stLinkButton a, div[data-testid="stDownloadButton"] button {{
-            background-color: {btn_bg} !important;
-            color: {btn_text_color} !important;
-            border: 1px solid {card_border} !important;
-            border-radius: 8px !important;
-        }}
-        .stButton button:hover, .stLinkButton a:hover, div[data-testid="stDownloadButton"] button:hover {{
-            transform: translateY(-3px) !important;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.2) !important;
-            color: {btn_hover_text} !important;
-            border-color: #FF4B4B !important;
-        }}
-
-        .main label {{ color: {label_color} !important; }}
-
-        @keyframes glow {{ from {{ text-shadow: 0 0 2px {input_label_color}; }} to {{ text-shadow: 0 0 10px #FF4B4B; }} }}
-        div[data-testid="stSelectbox"] > label {{
-            color: {input_label_color} !important; 
-            font-weight: 900 !important;
-            font-size: 1.2rem !important;
-            animation: glow 1.5s ease-in-out infinite alternate;
-            transition: all 0.3s ease;
-        }}
-
-        @keyframes pulse-header {{ 0% {{ transform: scale(1); }} 50% {{ transform: scale(1.05); text-shadow: 0 0 15px rgba(255, 75, 75, 0.6); }} 100% {{ transform: scale(1); }} }}
-        .main-header {{ transition: transform 0.3s ease; cursor: pointer; }}
-        .main-header:hover {{ animation: pulse-header 1s infinite ease-in-out; }}
-
+        /* Modern Cards */
         .rec-card {{
             background: {card_bg};
             backdrop-filter: blur(10px);
             border: 1px solid {card_border};
-            padding: 15px;
+            padding: 20px;
             border-radius: 15px;
-            border-left: 5px solid #FF4B4B;
+            border-top: 5px solid #FF4B4B; /* Top accent for modern look */
             color: {text_color};
-            font-weight: 600;
-            font-size: 1.1rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 350px; /* Fixed height for uniformity */
             display: flex;
-            align-items: center;
-            height: 100%;
+            flex-direction: column;
+            justify-content: flex-start;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
         }}
+        
         .rec-card:hover {{
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(255, 75, 75, 0.3);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(255, 75, 75, 0.25);
             border-color: #FF4B4B;
         }}
 
-        header[data-testid="stHeader"]::after {{
-            content: 'G4 SOLUTION';
-            color: {header_text_color};
-            font-size: 20px;
-            font-weight: 900;
-            position: absolute;
-            left: 50%; top: 50%; transform: translate(-50%, -50%);
-            z-index: 999; pointer-events: none;
+        .movie-title {{
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            color: {text_color};
+            height: 50px; /* Fixed height for title area */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }}
+
+        .movie-genre {{
+            font-size: 0.8rem;
+            color: #FF4B4B;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }}
+
+        .movie-overview {{
+            font-size: 0.9rem;
+            opacity: 0.8;
+            display: -webkit-box;
+            -webkit-line-clamp: 7; /* Limit lines of text */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4;
+        }}
+
+        /* Inputs & Animations */
+        div[data-testid="stSelectbox"] > label {{
+            color: {input_label_color} !important;
+            font-weight: 900 !important;
+            font-size: 1.2rem !important;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }}
+        @keyframes glow {{ from {{ text-shadow: 0 0 2px {input_label_color}; }} to {{ text-shadow: 0 0 10px #FF4B4B; }} }}
         
+        header[data-testid="stHeader"] {{ background: transparent !important; }}
         .stDeployButton {{ visibility: hidden; }}
-        [data-testid="stImage"] img {{
-            max-height: 200px; object-fit: cover; border-radius: 20px;
-            box-shadow: 0 12px 24px rgba(255, 75, 75, 0.4); margin-bottom: 20px;
-        }}
         </style>
     """, unsafe_allow_html=True)
 
-    # --- APP LOGIC ---
+    # --- LOGIC ---
     if st.session_state.last_method != filter_method:
         st.session_state.recommendations = None
         st.session_state.selected_movie_name = None
         st.session_state.last_method = filter_method
-
-    @st.dialog("🎬 Movie Overview")
-    def show_movie_details(title, overview):
-        st.header(title)
-        st.write(overview)
-        st.caption("Plot summary from TMDB Database.")
 
     def get_recommendations(movie, method):
         try:
@@ -404,19 +356,35 @@ def main_app():
             result = []
             for i in scores:
                 if method == 'Content-Based Filtering':
-                    movie_title = titles.iloc[i[0]].title
-                    try:
-                        movie_info = titles.iloc[i[0]].overview
-                    except:
-                        movie_info = "No overview available."
+                    row = titles.iloc[i[0]]
+                    movie_title = row.title
+                    
+                    # Fetch Overview
+                    try: movie_info = row.overview
+                    except: movie_info = "No overview available."
+                    
+                    # Fetch Genre (Handle if column exists, else N/A)
+                    try: 
+                        raw_genres = row.genres 
+                        # Basic check if it looks like a list string or list
+                        movie_genre = str(raw_genres).replace("[","").replace("]","").replace("'","")
+                    except: movie_genre = "Genre: N/A"
+
                 else:
                     movie_title = collab_titles[i[0]]
+                    # Try to fetch details from main DF
                     try:
-                        movie_info = movies_df[movies_df['title'] == movie_title]['overview'].values[0]
+                        row = movies_df[movies_df['title'] == movie_title].iloc[0]
+                        movie_info = row.overview
+                        try: 
+                            raw_genres = row.genres
+                            movie_genre = str(raw_genres).replace("[","").replace("]","").replace("'","")
+                        except: movie_genre = "Genre: N/A"
                     except:
-                        movie_info = "No overview available for this title."
+                        movie_info = "No overview available."
+                        movie_genre = "Genre: N/A"
                 
-                result.append({'title': movie_title, 'info': movie_info})
+                result.append({'title': movie_title, 'info': movie_info, 'genre': movie_genre})
                 
             return result
         except:
@@ -426,79 +394,70 @@ def main_app():
         st.session_state.recommendations = None
         st.session_state.selected_movie_name = None
 
-    # --- UI LAYOUT ---
+    # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
-    st.write("<div style='text-align: center; margin-bottom: 30px; opacity: 0.8;'>Discover your next favorite film using Group 4's AI Engine.</div>", unsafe_allow_html=True)
+    st.markdown('<h2 style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
         if filter_method == 'Content-Based Filtering':
-            st.markdown("##### 🎭 Content Mode (Plot & Genre)")
+            st.markdown("##### 🎭 Content Mode")
             movie_list = movies_df['title'].values
         else:
-            st.markdown("##### 👥 Collaborative Mode (User Ratings)")
+            st.markdown("##### 👥 Collaborative Mode")
             movie_list = collab_titles
 
         selected_movie = st.selectbox("Select a movie you love:", movie_list)
 
-        col1, col2 = st.columns([1, 1])
-        with col1:
+        c1, c2 = st.columns([1, 1])
+        with c1:
             if st.button('✨ Find Recommendations', type="primary", use_container_width=True):
                 recs = get_recommendations(selected_movie, filter_method)
                 st.session_state.recommendations = recs
                 st.session_state.selected_movie_name = selected_movie
-                # --- SAVE TO USER HISTORY ---
                 save_user_history(st.session_state.username, selected_movie, recs)
-                st.toast(f"Saved to history for {st.session_state.username}!")
-
-        with col2:
+        
+        with c2:
             if st.session_state.recommendations:
                 if st.button('🗑️ Clear Results', use_container_width=True):
                     clear_results()
                     st.rerun()
 
+    # --- RESULTS DISPLAY (CARDS) ---
     if st.session_state.recommendations:
         st.markdown("---")
         st.subheader(f"Because you liked '{st.session_state.selected_movie_name}':")
-
-        for movie_data in st.session_state.recommendations:
-            c_card, c_btn = st.columns([5, 1])
-            with c_card:
-                st.markdown(f'<div class="rec-card">🎬 {movie_data["title"]}</div>', unsafe_allow_html=True)
-            with c_btn:
-                st.write("") 
-                if st.button("ℹ️ About", key=f"btn_{movie_data['title']}", help="Read Plot"):
-                    show_movie_details(movie_data['title'], movie_data['info'])
+        
+        # DISPLAY IN 5 COLUMNS
+        cols = st.columns(5)
+        
+        for i, movie in enumerate(st.session_state.recommendations):
+            with cols[i]:
+                st.markdown(f"""
+                <div class="rec-card">
+                    <div class="movie-title">{movie['title']}</div>
+                    <div class="movie-genre">{movie['genre']}</div>
+                    <div class="movie-overview">{movie['info']}</div>
+                </div>
+                """, unsafe_allow_html=True)
 
         st.markdown("---")
         st.header("📥 Save & Watch")
         col_export, col_watch = st.columns([1, 2])
-
+        
         with col_export:
-            export_text = f"Movie Recommender Results (Group 4)\nSelected Movie: {st.session_state.selected_movie_name}\n\nRecommendations:\n"
-            for i, movie_data in enumerate(st.session_state.recommendations, 1):
-                export_text += f"{i}. {movie_data['title']}\n   Plot: {movie_data['info']}\n"
-            export_text += f"\nWhere to Watch:\n"
-            for name, url in external_links.items():
-                export_text += f"- {name}: {url}\n"
-
-            st.download_button(
-                label="📄 Export Recommendations",
-                data=export_text,
-                file_name="group4_recommendations.txt",
-                mime="text/plain",
-                use_container_width=True
-            )
+            export_text = f"Group 4 Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
+            for i, m in enumerate(st.session_state.recommendations, 1):
+                export_text += f"{i}. {m['title']} ({m['genre']})\n   {m['info']}\n\n"
+            
+            st.download_button("📄 Export Results", data=export_text, file_name="g4_recs.txt", use_container_width=True)
 
         with col_watch:
-            st.write("**Where to Watch & Download:**")
-            link_cols = st.columns(2)
-            i = 0
-            for name, url in external_links.items():
-                with link_cols[i % 2]:
+            st.write("**Where to Watch:**")
+            l_cols = st.columns(2)
+            for i, (name, url) in enumerate(external_links.items()):
+                with l_cols[i % 2]:
                     st.link_button(f"🌐 {name}", url, use_container_width=True)
-                i += 1
 
 # --- CONTROL FLOW ---
 if not st.session_state.logged_in:
