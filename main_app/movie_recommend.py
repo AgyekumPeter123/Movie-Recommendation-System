@@ -6,7 +6,6 @@ import streamlit as st
 import json
 import hashlib
 import uuid
-import ast
 from datetime import datetime
 
 # --- PAGE CONFIG ---
@@ -79,7 +78,6 @@ def delete_user_account(username):
     return False
 
 def clear_user_history(username):
-    """Clears history for the specific user instantly."""
     db = load_db()
     if username in db:
         db[username]['history'] = []
@@ -103,9 +101,8 @@ external_links = {
     "MovieBox (Stream)": "https://moviebox.ph"
 }
 
-# --- LOGIN / SIGNUP PAGE (MODERNIZED) ---
+# --- LOGIN / SIGNUP PAGE ---
 def login_page():
-    # Centered Layout with Columns
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
@@ -241,9 +238,12 @@ def main_app():
         st.link_button("💬 WhatsApp", "https://chat.whatsapp.com/DsyWXB9DzG19CbTjK8dKhF?mode=hqrt2", use_container_width=True)
         st.link_button("📚 Thrive Africa", "https://thriveafrica.co/campus", use_container_width=True)
         st.divider()
-        dark_mode = st.toggle("🌙 Dark Mode")
+        
+        # --- DARK MODE TOGGLE ---
+        # Note: We read this value immediately to apply CSS
+        dark_mode = st.toggle("🌙 Dark Mode", value=True)
 
-    # --- THEME COLORS ---
+    # --- THEME COLORS & LOGIC ---
     if dark_mode:
         main_bg = "#0e1117"
         text_color = "#ffffff"
@@ -251,6 +251,9 @@ def main_app():
         input_label_color = "#ffffff"
         card_bg = "rgba(255, 255, 255, 0.05)"
         card_border = "rgba(255, 255, 255, 0.1)"
+        # Button specific colors for Dark Mode
+        btn_text_color = "#ffffff" 
+        btn_bg = "#262730"
     else:
         main_bg = "#ffffff"
         text_color = "#000000"
@@ -258,11 +261,33 @@ def main_app():
         input_label_color = "#8B0000"
         card_bg = "rgba(0, 0, 0, 0.02)"
         card_border = "rgba(0, 0, 0, 0.05)"
+        # Button specific colors for Light Mode
+        btn_text_color = "#000000"
+        btn_bg = "#f0f2f6"
 
     # --- CSS ---
     st.markdown(f"""
         <style>
         .stApp {{ background-color: {main_bg}; color: {text_color}; }}
+        
+        /* FORCE Button Text Colors based on mode */
+        .stButton button {{
+            color: {btn_text_color} !important;
+            background-color: {btn_bg} !important;
+            border: 1px solid {card_border} !important;
+        }}
+        
+        /* Ensure Hover Text is visible (White on Red) */
+        .stButton button:hover {{
+            color: #ffffff !important;
+            border-color: #FF4B4B !important;
+            background-color: #FF4B4B !important;
+        }}
+        
+        /* Fix Sidebar Text Colors */
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
+            color: {text_color} !important; 
+        }}
         
         /* Modern Cards */
         .rec-card {{
@@ -271,10 +296,10 @@ def main_app():
             border: 1px solid {card_border};
             padding: 20px;
             border-radius: 15px;
-            border-top: 5px solid #FF4B4B; /* Top accent for modern look */
+            border-top: 5px solid #FF4B4B; 
             color: {text_color};
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            height: 350px; /* Fixed height for uniformity */
+            height: 400px; /* Increased height for content */
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -293,7 +318,7 @@ def main_app():
             font-weight: 800;
             margin-bottom: 5px;
             color: {text_color};
-            height: 50px; /* Fixed height for title area */
+            min-height: 50px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -301,26 +326,28 @@ def main_app():
         }}
 
         .movie-genre {{
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #FF4B4B;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 10px;
+            min-height: 20px;
         }}
 
         .movie-overview {{
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             opacity: 0.8;
             display: -webkit-box;
-            -webkit-line-clamp: 7; /* Limit lines of text */
+            -webkit-line-clamp: 9; 
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.4;
+            line-height: 1.5;
+            color: {text_color};
         }}
 
-        /* Inputs & Animations */
+        /* Input Labels */
         div[data-testid="stSelectbox"] > label {{
             color: {input_label_color} !important;
             font-weight: 900 !important;
@@ -342,52 +369,61 @@ def main_app():
 
     def get_recommendations(movie, method):
         try:
+            # 1. Get List of Recommended Titles based on Method
+            recommended_titles = []
+            
             if method == 'Content-Based Filtering':
                 idx = movies_df[movies_df['title'] == movie].index[0]
                 sim = content_similarity[idx]
-                titles = movies_df
+                scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
+                for i in scores:
+                    recommended_titles.append(movies_df.iloc[i[0]].title)
             else:
+                # Collaborative
                 idx = list(collab_titles).index(movie)
                 sim = collab_similarity[idx]
-                titles = None
-            
-            scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
-            
+                scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
+                for i in scores:
+                    recommended_titles.append(collab_titles[i[0]])
+
+            # 2. Fetch Details for each Title from the Main DataFrame
             result = []
-            for i in scores:
-                movie_info = "No overview available."
-                movie_genre = "Genre: N/A"
+            for title in recommended_titles:
+                # Find the row in movies_df that matches the title
+                match = movies_df[movies_df['title'] == title]
                 
-                if method == 'Content-Based Filtering':
-                    row = titles.iloc[i[0]]
-                    movie_title = row.title
-                else:
-                    movie_title = collab_titles[i[0]]
-                    # Find this collaborative title in the main DataFrame
-                    matches = movies_df[movies_df['title'] == movie_title]
-                    if not matches.empty:
-                        row = matches.iloc[0]
-                    else:
-                        row = None
-
-                # Extract details if row exists
-                if row is not None:
-                    try: 
-                        movie_info = row.overview
-                    except: pass
+                if not match.empty:
+                    row = match.iloc[0]
                     
+                    # Get Overview
                     try: 
-                        raw_genres = row.genres 
-                        movie_genre = str(raw_genres).replace("[","").replace("]","").replace("'","")
-                    except: pass
+                        movie_info = row.overview if pd.notna(row.overview) else "No overview available."
+                    except: 
+                        movie_info = "No overview available."
+                    
+                    # Get Genre
+                    try:
+                        # Check for 'genres' first, then 'genre'
+                        if 'genres' in row.index:
+                            raw_genre = row.genres
+                        elif 'genre' in row.index:
+                            raw_genre = row.genre
+                        else:
+                            raw_genre = "Unknown"
+                            
+                        # Clean up list string formatting e.g. "['Action', 'Comedy']" -> "Action, Comedy"
+                        movie_genre = str(raw_genre).replace("[", "").replace("]", "").replace("'", "").replace('"', "")
+                    except:
+                        movie_genre = "Genre: N/A"
                 else:
-                    # Fallback for when collab title isn't in main DF
-                    pass 
+                    movie_info = "No details found in database."
+                    movie_genre = "Genre: N/A"
 
-                result.append({'title': movie_title, 'info': movie_info, 'genre': movie_genre})
+                result.append({'title': title, 'info': movie_info, 'genre': movie_genre})
                 
             return result
-        except:
+        except Exception as e:
+            st.error(f"Error: {e}")
             return []
 
     def clear_results():
