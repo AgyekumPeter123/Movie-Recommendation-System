@@ -355,35 +355,35 @@ def main_app():
             
             result = []
             for i in scores:
+                movie_info = "No overview available."
+                movie_genre = "Genre: N/A"
+                
                 if method == 'Content-Based Filtering':
                     row = titles.iloc[i[0]]
                     movie_title = row.title
-                    
-                    # Fetch Overview
-                    try: movie_info = row.overview
-                    except: movie_info = "No overview available."
-                    
-                    # Fetch Genre (Handle if column exists, else N/A)
-                    try: 
-                        raw_genres = row.genres 
-                        # Basic check if it looks like a list string or list
-                        movie_genre = str(raw_genres).replace("[","").replace("]","").replace("'","")
-                    except: movie_genre = "Genre: N/A"
-
                 else:
                     movie_title = collab_titles[i[0]]
-                    # Try to fetch details from main DF
-                    try:
-                        row = movies_df[movies_df['title'] == movie_title].iloc[0]
+                    # Find this collaborative title in the main DataFrame
+                    matches = movies_df[movies_df['title'] == movie_title]
+                    if not matches.empty:
+                        row = matches.iloc[0]
+                    else:
+                        row = None
+
+                # Extract details if row exists
+                if row is not None:
+                    try: 
                         movie_info = row.overview
-                        try: 
-                            raw_genres = row.genres
-                            movie_genre = str(raw_genres).replace("[","").replace("]","").replace("'","")
-                        except: movie_genre = "Genre: N/A"
-                    except:
-                        movie_info = "No overview available."
-                        movie_genre = "Genre: N/A"
-                
+                    except: pass
+                    
+                    try: 
+                        raw_genres = row.genres 
+                        movie_genre = str(raw_genres).replace("[","").replace("]","").replace("'","")
+                    except: pass
+                else:
+                    # Fallback for when collab title isn't in main DF
+                    pass 
+
                 result.append({'title': movie_title, 'info': movie_info, 'genre': movie_genre})
                 
             return result
