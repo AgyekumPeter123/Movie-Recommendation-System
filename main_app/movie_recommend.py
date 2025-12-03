@@ -239,10 +239,9 @@ def main_app():
 
         st.divider()
 
-        # 3. Engine Selection (Text "Select" removed)
-        st.markdown("### ⚙️ Engine")
+        # 3. Engine Selection 
         filter_method = st.radio(
-            "Engine", # Internal label, hidden by collapsed visibility
+            "Engine",
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
