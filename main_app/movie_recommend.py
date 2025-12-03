@@ -74,6 +74,15 @@ def save_user_history(username, selected_movie, recommendations):
         db[username]['history'].append(entry)
         save_db(db)
 
+def delete_user_account(username):
+    """Deletes the user from the database."""
+    db = load_db()
+    if username in db:
+        del db[username]
+        save_db(db)
+        return True
+    return False
+
 # --- SESSION STATE INITIALIZATION ---
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -130,7 +139,7 @@ def login_page():
             else:
                 st.warning("Please enter all fields")
 
-# --- MAIN APP LOGIC (Your Original Code Wrapped) ---
+# --- MAIN APP LOGIC ---
 def main_app():
     # --- LOAD DATA ---
     @st.cache_data
@@ -169,11 +178,32 @@ def main_app():
         st.success(f"👤 **User:** {st.session_state.username}")
         st.caption(f"ID: {st.session_state.user_info.get('user_id', 'N/A')}")
         
-        if st.button("🚪 Logout", use_container_width=True):
-            st.session_state.logged_in = False
-            st.session_state.username = None
-            st.rerun()
+        col_logout, col_del = st.columns([1, 1])
+        
+        with col_logout:
+            if st.button("🚪 Logout", use_container_width=True):
+                st.session_state.logged_in = False
+                st.session_state.username = None
+                st.rerun()
+
+        # --- DELETE ACCOUNT DIALOG ---
+        @st.dialog("⚠️ Delete Account")
+        def delete_account_dialog():
+            st.warning("Are you sure? This action cannot be undone.")
+            st.write("This will permanently delete your account and all search history.")
             
+            if st.button("Yes, Delete Everything", type="primary"):
+                if delete_user_account(st.session_state.username):
+                    st.session_state.logged_in = False
+                    st.session_state.username = None
+                    st.rerun()
+                else:
+                    st.error("Error deleting account.")
+
+        with col_del:
+            if st.button("❌ Delete", type="primary", use_container_width=True, help="Delete Account"):
+                delete_account_dialog()
+
         st.divider()
         
         # Original Sidebar Content
@@ -195,16 +225,26 @@ def main_app():
 
         st.divider()
         
-        # VIEW HISTORY BUTTON
-        with st.expander("📜 Your History"):
-            db = load_db()
-            history = db[st.session_state.username].get('history', [])
+        # --- HISTORY SECTION WITH REFRESH ---
+        # Using columns to put header and refresh button side-by-side
+        hist_col1, hist_col2 = st.columns([4, 1])
+        with hist_col1:
+            st.markdown("### 📜 History")
+        with hist_col2:
+            # Empty container for refresh button just to trigger rerun logic naturally
+            if st.button("🔄", help="Refresh History"):
+                pass # The act of clicking reruns the script, thus reloading the DB below
+
+        with st.expander("View Recent Activity", expanded=True):
+            db = load_db() # Reloads DB fresh on every run (including refresh click)
+            history = db.get(st.session_state.username, {}).get('history', [])
+            
             if not history:
                 st.write("No history yet.")
             else:
                 for h in reversed(history[-5:]): # Show last 5
-                    st.write(f"**{h['selected_movie']}**")
-                    st.caption(f"{h['timestamp']}")
+                    st.markdown(f"**🎬 {h['selected_movie']}**")
+                    st.caption(f"🕒 {h['timestamp']}")
                     st.markdown("---")
 
         st.divider()
