@@ -6,7 +6,6 @@ import streamlit as st
 import json
 import hashlib
 import uuid
-import ast
 from datetime import datetime
 
 # --- PAGE CONFIG ---
@@ -175,19 +174,14 @@ def main_app():
 
     movies_df, content_similarity, collab_similarity, collab_titles = load_data()
 
-    # --- HELPER FUNCTION: FIND MOVIE ROW ROBUSTLY ---
+    # --- HELPER FUNCTION ---
     def find_movie_row(df, title):
-        # 1. Exact match (case-insensitive, strip spaces)
         match = df[df['title'].str.lower().str.strip() == title.lower().strip()]
         if not match.empty:
             return match.iloc[0]
-
-        # 2. Fallback -> partial match (safe regex)
-        # We use regex=False to ensure special characters like ( ) in titles don't crash it
         match = df[df['title'].str.contains(title, case=False, na=False, regex=False)]
         if not match.empty:
             return match.iloc[0]
-
         return None
 
     # --- SESSION STATE ---
@@ -198,51 +192,51 @@ def main_app():
     if 'last_method' not in st.session_state:
         st.session_state.last_method = None
 
-    # --- SIDEBAR ---
+    # --- SIDEBAR (STRUCTURED & MODERNIZED) ---
     with st.sidebar:
+        # 1. Logo
+        st.markdown("""
+            <div style="text-align: center; font-weight: 800; font-size: 2rem;
+                        padding: 10px; border: 2px solid #FF4B4B; border-radius: 15px;
+                        background: rgba(255, 75, 75, 0.1); backdrop-filter: blur(5px);
+                        margin-bottom: 20px; color: black;">
+                GROUP 4
+            </div>
+        """, unsafe_allow_html=True)
+
+        # 2. User Info & Logout
         st.success(f"👤 **{st.session_state.username}**")
-        st.caption(f"ID: {st.session_state.user_info.get('user_id', 'N/A')}")
-        
-        col_logout, col_del = st.columns([1, 1])
-        with col_logout:
-            if st.button("🚪 Logout", use_container_width=True):
-                st.session_state.logged_in = False
-                st.session_state.username = None
-                st.rerun()
-
-        @st.dialog("⚠️ Delete Account")
-        def delete_account_dialog():
-            st.warning("Permanently delete account and history?")
-            if st.button("Yes, Delete", type="primary"):
-                if delete_user_account(st.session_state.username):
-                    st.session_state.logged_in = False
-                    st.session_state.username = None
-                    st.rerun()
-
-        with col_del:
-            if st.button("❌ Delete", type="primary", use_container_width=True):
-                delete_account_dialog()
+        if st.button("🚪 Logout", use_container_width=True):
+            st.session_state.logged_in = False
+            st.session_state.username = None
+            st.rerun()
 
         st.divider()
+
+        # 3. Engine Selection (Modern Toggle)
         st.markdown("### ⚙️ Engine")
-        filter_method = st.radio("Method:", ('Content-Based Filtering', 'Collaborative Filtering'), label_visibility="collapsed")
-        
+        filter_method = st.radio(
+            "Select Engine",
+            ('Content-Based Filtering', 'Collaborative Filtering'),
+            label_visibility="collapsed"
+        )
+
         st.divider()
-        
-        # --- HISTORY & CLEAR BUTTON ---
-        h_col1, h_col2 = st.columns([3, 2])
+
+        # 4. History
+        h_col1, h_col2 = st.columns([3, 1])
         with h_col1:
             st.markdown("### 📜 History")
         with h_col2:
-            if st.button("🗑️ Clear", help="Clear History"):
+            if st.button("🗑️", help="Clear History"):
                 clear_user_history(st.session_state.username)
                 st.rerun()
 
-        with st.expander("Recent Activity", expanded=True):
+        with st.expander("View Recent", expanded=False):
             db = load_db()
             history = db.get(st.session_state.username, {}).get('history', [])
             if not history:
-                st.caption("No history found.")
+                st.caption("No history.")
             else:
                 for h in reversed(history[-5:]):
                     st.markdown(f"**🎬 {h['selected_movie']}**")
@@ -250,15 +244,53 @@ def main_app():
                     st.markdown("---")
 
         st.divider()
-        st.markdown("### 🚀 Links")
-        st.link_button("💬 WhatsApp", "https://chat.whatsapp.com/DsyWXB9DzG19CbTjK8dKhF?mode=hqrt2", use_container_width=True)
-        st.link_button("📚 Thrive Africa", "https://thriveafrica.co/campus", use_container_width=True)
+
+        # 5. Quick Links
+        st.markdown("### 🚀 Quick Links")
+        st.link_button("💬 Join WhatsApp Team", "https://chat.whatsapp.com/DsyWXB9DzG19CbTjK8dKhF?mode=hqrt2", use_container_width=True)
+        st.link_button("📂 Access Notebook", "https://colab.research.google.com/drive/1XvRHy3z1cDWH51EuRegY_i-FWH2t2ypn?usp=drive_link", use_container_width=True)
+        st.link_button("📚 Study With Thrive Africa", "https://thriveafrica.co/campus", use_container_width=True)
+
+        st.divider()
+
+        # 6. Team & About
+        with st.expander("👥 Meet the Team"):
+            team = [
+                "1. Peter Agyekum", "2. Felicia I. Nduefuna", "3. Olivia Mawufemor Attipoe",
+                "4. Donkor Promise Esi Rhoda", "5. Osborn Tulasi", "6. Onipayede John Kwaku",
+                "7. Peter Agyekum Boateng", "8. Aning Jason", "9. Maxwell Adu",
+                "10. Michael Nyarku", "11. Yeboah Eldad"
+            ]
+            for member in team:
+                st.write(member)
+
+        with st.expander("ℹ️ About"):
+            st.write("**Group 4 Final Project**")
+            st.write("Course: **Machine Learning & AI**")
+            st.write("Provider: **Thrive Africa**")
+            st.write("Mentor: **Big Tamara**")
+
+        st.divider()
+
+        # 7. Delete Account
+        @st.dialog("⚠️ Delete Account")
+        def delete_account_dialog():
+            st.warning("Permanently delete account?")
+            if st.button("Yes, Delete", type="primary"):
+                if delete_user_account(st.session_state.username):
+                    st.session_state.logged_in = False
+                    st.session_state.username = None
+                    st.rerun()
+
+        if st.button("❌ Delete Account", type="primary", use_container_width=True):
+            delete_account_dialog()
+
         st.divider()
         
-        # --- DARK MODE TOGGLE ---
+        # 8. Dark Mode Toggle
         dark_mode = st.toggle("🌙 Dark Mode", value=True)
 
-    # --- THEME COLORS & LOGIC ---
+    # --- THEME LOGIC ---
     if dark_mode:
         main_bg = "#0e1117"
         text_color = "#ffffff"
@@ -266,8 +298,8 @@ def main_app():
         input_label_color = "#ffffff"
         card_bg = "rgba(255, 255, 255, 0.05)"
         card_border = "rgba(255, 255, 255, 0.1)"
-        btn_text_color = "#ffffff" 
-        btn_bg = "#262730"
+        # App bar color
+        header_bg = "#0e1117" 
     else:
         main_bg = "#ffffff"
         text_color = "#000000"
@@ -275,34 +307,79 @@ def main_app():
         input_label_color = "#8B0000"
         card_bg = "rgba(0, 0, 0, 0.02)"
         card_border = "rgba(0, 0, 0, 0.05)"
-        btn_text_color = "#000000"
-        btn_bg = "#f0f2f6"
+        header_bg = "#ffffff"
 
-    # --- CSS ---
+    # --- CSS INJECTION ---
     st.markdown(f"""
         <style>
+        /* 1. MAIN APP COLORS */
         .stApp {{ background-color: {main_bg}; color: {text_color}; }}
         
-        /* FORCE Button Text Colors based on mode */
-        .stButton button {{
-            color: {btn_text_color} !important;
-            background-color: {btn_bg} !important;
-            border: 1px solid {card_border} !important;
+        /* 2. FORCE SIDEBAR TO BE WHITE (LIGHT MODE STYLE) ALWAYS */
+        [data-testid="stSidebar"] {{
+            background-color: #ffffff !important;
+            border-right: 1px solid rgba(0,0,0,0.1) !important;
         }}
-        
-        /* Ensure Hover Text is visible (White on Red) */
-        .stButton button:hover {{
+        [data-testid="stSidebar"] p, 
+        [data-testid="stSidebar"] span, 
+        [data-testid="stSidebar"] label, 
+        [data-testid="stSidebar"] div,
+        [data-testid="stSidebar"] .stMarkdown {{
+            color: #000000 !important;
+        }}
+        /* Sidebar arrow color */
+        [data-testid="stSidebarCollapsedControl"] svg,
+        [data-testid="stSidebarExpandedControl"] svg {{
+            fill: #000000 !important;
+            color: #000000 !important;
+        }}
+
+        /* 3. FORCE ALL BUTTONS TO WHITE MODE STYLE (Black text, White/Grey bg) */
+        .stButton button, .stLinkButton a, div[data-testid="stDownloadButton"] button {{
+            background-color: #f0f2f6 !important;
+            color: #000000 !important;
+            border: 1px solid rgba(0,0,0,0.1) !important;
+        }}
+        /* Hover Effect for Buttons */
+        .stButton button:hover, .stLinkButton a:hover, div[data-testid="stDownloadButton"] button:hover {{
+            background-color: #FF4B4B !important;
             color: #ffffff !important;
             border-color: #FF4B4B !important;
+            transform: translateY(-2px);
+        }}
+
+        /* 4. APP BAR VISIBILITY */
+        header[data-testid="stHeader"] {{
+            background-color: {header_bg} !important;
+        }}
+
+        /* 5. MODERN RADIO BUTTON (For Sidebar Engine Toggle) */
+        [data-testid="stSidebar"] .stRadio > div {{
+            flex-direction: row;
+            gap: 10px;
+        }}
+        [data-testid="stSidebar"] .stRadio label {{
+            background-color: #f0f2f6 !important;
+            padding: 10px 15px !important;
+            border-radius: 8px !important;
+            border: 1px solid #ddd !important;
+            color: black !important;
+            font-weight: 600 !important;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }}
+        /* Highlight selected radio */
+        [data-testid="stSidebar"] .stRadio div[aria-checked="true"] label {{
             background-color: #FF4B4B !important;
+            color: white !important;
+            border-color: #FF4B4B !important;
         }}
-        
-        /* Fix Sidebar Text Colors */
-        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {{
-            color: {text_color} !important; 
-        }}
-        
-        /* Modern Cards */
+
+        /* 6. CARD STYLING */
         .rec-card {{
             background: {card_bg};
             backdrop-filter: blur(10px);
@@ -312,14 +389,13 @@ def main_app():
             border-top: 5px solid #FF4B4B; 
             color: {text_color};
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            height: 400px; /* Increased height for content */
+            height: 350px; 
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             overflow: hidden;
         }}
-        
         .rec-card:hover {{
             transform: translateY(-8px);
             box-shadow: 0 15px 30px rgba(255, 75, 75, 0.25);
@@ -329,7 +405,7 @@ def main_app():
         .movie-title {{
             font-size: 1.1rem;
             font-weight: 800;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             color: {text_color};
             min-height: 50px;
             display: -webkit-box;
@@ -338,21 +414,11 @@ def main_app():
             overflow: hidden;
         }}
 
-        .movie-genre {{
-            font-size: 0.75rem;
-            color: #FF4B4B;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            min-height: 20px;
-        }}
-
         .movie-overview {{
             font-size: 0.85rem;
             opacity: 0.8;
             display: -webkit-box;
-            -webkit-line-clamp: 9; 
+            -webkit-line-clamp: 10; 
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -369,7 +435,6 @@ def main_app():
         }}
         @keyframes glow {{ from {{ text-shadow: 0 0 2px {input_label_color}; }} to {{ text-shadow: 0 0 10px #FF4B4B; }} }}
         
-        header[data-testid="stHeader"] {{ background: transparent !important; }}
         .stDeployButton {{ visibility: hidden; }}
         </style>
     """, unsafe_allow_html=True)
@@ -384,14 +449,13 @@ def main_app():
         try:
             recommended_titles = []
 
-            # ---- 1. SELECT ENGINE ----
+            # 1. ENGINE SELECTION
             if method == 'Content-Based Filtering':
                 idx = movies_df[movies_df['title'] == movie].index[0]
                 sim = content_similarity[idx]
                 scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
                 for i in scores:
                     recommended_titles.append(movies_df.iloc[i[0]].title)
-
             else:
                 # Collaborative
                 idx = list(collab_titles).index(movie)
@@ -400,46 +464,33 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(collab_titles[i[0]])
 
-            # ---- 2. FETCH DETAILS (Universal Lookup) ----
+            # 2. FETCH DETAILS
             result = []
             for title in recommended_titles:
                 
-                # Use the robust find function
-                row = find_movie_row(movies_df, title)
-
-                if row is not None:
-                    # Overview
-                    movie_info = row.get("overview", "No overview available.")
-                    if pd.isna(movie_info):
-                        movie_info = "No overview available."
-
-                    # Genre (Universal Extraction)
-                    genre_fields = ["genres", "genre", "genre_names", "listed_in"]
-                    raw_genre = None
-                    for field in genre_fields:
-                        if field in row.index and pd.notna(row[field]):
-                            raw_genre = row[field]
-                            break
-
-                    if raw_genre:
-                        movie_genre = str(raw_genre).replace("[","").replace("]","").replace("'","").replace('"',"")
+                # CONTENT-BASED: Show Overview
+                if method == 'Content-Based Filtering':
+                    row = find_movie_row(movies_df, title)
+                    if row is not None:
+                        movie_info = row.get("overview", "No overview available.")
+                        if pd.isna(movie_info): movie_info = "No overview available."
                     else:
-                        movie_genre = "Genre: N/A"
-
+                        movie_info = "No overview available."
+                
+                # COLLABORATIVE: Hide Overview (Requirement #2)
                 else:
-                    movie_info = "No overview available."
-                    movie_genre = "Genre: N/A"
+                    movie_info = "" # Intentionally empty
 
+                # GENRE: Removed (Requirement #1)
+                
                 result.append({
                     'title': title,
-                    'info': movie_info,
-                    'genre': movie_genre
+                    'info': movie_info
                 })
 
             return result
 
         except Exception as e:
-            st.error(f"Error: {e}")
             return []
 
     def clear_results():
@@ -480,16 +531,18 @@ def main_app():
         st.markdown("---")
         st.subheader(f"Because you liked '{st.session_state.selected_movie_name}':")
         
-        # DISPLAY IN 5 COLUMNS
         cols = st.columns(5)
         
         for i, movie in enumerate(st.session_state.recommendations):
             with cols[i]:
+                # Render Card based on available info
+                # Collaborative has empty info, so we can hide that div or leave it empty
+                overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
+                
                 st.markdown(f"""
                 <div class="rec-card">
                     <div class="movie-title">{movie['title']}</div>
-                    <div class="movie-genre">{movie['genre']}</div>
-                    <div class="movie-overview">{movie['info']}</div>
+                    {overview_html}
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -500,7 +553,9 @@ def main_app():
         with col_export:
             export_text = f"Group 4 Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
             for i, m in enumerate(st.session_state.recommendations, 1):
-                export_text += f"{i}. {m['title']} ({m['genre']})\n   {m['info']}\n\n"
+                export_text += f"{i}. {m['title']}\n"
+                if m['info']: export_text += f"   {m['info']}\n"
+                export_text += "\n"
             
             st.download_button("📄 Export Results", data=export_text, file_name="g4_recs.txt", use_container_width=True)
 
