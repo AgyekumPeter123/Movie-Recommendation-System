@@ -6,6 +6,7 @@ import streamlit as st
 import json
 import hashlib
 import uuid
+import re
 from datetime import datetime
 
 # --- PAGE CONFIG ---
@@ -36,10 +37,25 @@ def save_db(data):
 def hash_password(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
+# --- PASSWORD STRENGTH CHECK (NEW) ---
+def check_password_strength(password):
+    if len(password) < 6:
+        return False, "⚠️ Password must be at least 6 characters."
+    if not re.search(r"\d", password):
+        return False, "⚠️ Password must contain at least one number."
+    if not re.search(r"[A-Z]", password):
+        return False, "⚠️ Password must contain at least one uppercase letter."
+    return True, "Valid"
+
 def register_user(username, password):
+    # Check Strength
+    is_strong, msg = check_password_strength(password)
+    if not is_strong:
+        return False, msg
+
     db = load_db()
     if username in db:
-        return False, "Username already exists!"
+        return False, "⚠️ Username already exists!"
     
     user_id = str(uuid.uuid4())[:8]
     db[username] = {
@@ -192,7 +208,7 @@ def main_app():
     if 'last_method' not in st.session_state:
         st.session_state.last_method = None
 
-    # --- SIDEBAR (STRUCTURED & MODERNIZED) ---
+    # --- SIDEBAR ---
     with st.sidebar:
         # 1. Logo
         st.markdown("""
@@ -213,10 +229,10 @@ def main_app():
 
         st.divider()
 
-        # 3. Engine Selection (Modern Toggle)
+        # 3. Engine Selection (Text "Select Engine" removed)
         st.markdown("### ⚙️ Engine")
         filter_method = st.radio(
-            "Select Engine",
+            "Engine Selection", # Internal label only
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
@@ -298,8 +314,6 @@ def main_app():
         input_label_color = "#ffffff"
         card_bg = "rgba(255, 255, 255, 0.05)"
         card_border = "rgba(255, 255, 255, 0.1)"
-        # App bar color
-        header_bg = "#0e1117" 
     else:
         main_bg = "#ffffff"
         text_color = "#000000"
@@ -307,53 +321,72 @@ def main_app():
         input_label_color = "#8B0000"
         card_bg = "rgba(0, 0, 0, 0.02)"
         card_border = "rgba(0, 0, 0, 0.05)"
-        header_bg = "#ffffff"
 
     # --- CSS INJECTION ---
     st.markdown(f"""
         <style>
-        /* 1. MAIN APP COLORS */
+        /* MAIN APP COLORS */
         .stApp {{ background-color: {main_bg}; color: {text_color}; }}
         
-        /* 2. FORCE SIDEBAR TO BE WHITE (LIGHT MODE STYLE) ALWAYS */
-        [data-testid="stSidebar"] {{
-            background-color: #ffffff !important;
-            border-right: 1px solid rgba(0,0,0,0.1) !important;
+        /* 1. RESTORE RED APP BAR & G4 SOLUTION */
+        header[data-testid="stHeader"] {{
+            background-color: #FF4B4B !important;
+            height: 60px;
         }}
-        [data-testid="stSidebar"] p, 
-        [data-testid="stSidebar"] span, 
-        [data-testid="stSidebar"] label, 
-        [data-testid="stSidebar"] div,
-        [data-testid="stSidebar"] .stMarkdown {{
-            color: #000000 !important;
-        }}
-        /* Sidebar arrow color */
-        [data-testid="stSidebarCollapsedControl"] svg,
-        [data-testid="stSidebarExpandedControl"] svg {{
-            fill: #000000 !important;
-            color: #000000 !important;
+        header[data-testid="stHeader"]::after {{
+            content: 'G4 SOLUTION';
+            color: white;
+            font-size: 20px;
+            font-weight: 900;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 999;
+            pointer-events: none;
         }}
 
-        /* 3. FORCE ALL BUTTONS TO WHITE MODE STYLE (Black text, White/Grey bg) */
+        /* 2. MINIMIZED IMAGE WITH SHADOW */
+        [data-testid="stImage"] img {{
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(255, 75, 75, 0.3);
+            transition: transform 0.3s ease;
+        }}
+        [data-testid="stImage"] img:hover {{
+            transform: scale(1.02);
+        }}
+
+        /* 3. BUTTON ANIMATION ON HOVER */
         .stButton button, .stLinkButton a, div[data-testid="stDownloadButton"] button {{
             background-color: #f0f2f6 !important;
             color: #000000 !important;
             border: 1px solid rgba(0,0,0,0.1) !important;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
         }}
-        /* Hover Effect for Buttons */
         .stButton button:hover, .stLinkButton a:hover, div[data-testid="stDownloadButton"] button:hover {{
+            transform: scale(1.05) !important;
             background-color: #FF4B4B !important;
-            color: #ffffff !important;
+            color: white !important;
             border-color: #FF4B4B !important;
-            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 75, 75, 0.4) !important;
         }}
 
-        /* 4. APP BAR VISIBILITY */
-        header[data-testid="stHeader"] {{
-            background-color: {header_bg} !important;
+        /* FORCE SIDEBAR WHITE */
+        [data-testid="stSidebar"] {{
+            background-color: #ffffff !important;
+            border-right: 1px solid rgba(0,0,0,0.1) !important;
+        }}
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label, [data-testid="stSidebar"] div, [data-testid="stSidebar"] .stMarkdown {{
+            color: #000000 !important;
+        }}
+        [data-testid="stSidebarCollapsedControl"] svg, [data-testid="stSidebarExpandedControl"] svg {{
+            fill: #000000 !important;
+            color: #000000 !important;
         }}
 
-        /* 5. MODERN RADIO BUTTON (For Sidebar Engine Toggle) */
+        /* MODERN RADIO BUTTON */
         [data-testid="stSidebar"] .stRadio > div {{
             flex-direction: row;
             gap: 10px;
@@ -372,14 +405,13 @@ def main_app():
             display: flex;
             justify-content: center;
         }}
-        /* Highlight selected radio */
         [data-testid="stSidebar"] .stRadio div[aria-checked="true"] label {{
             background-color: #FF4B4B !important;
             color: white !important;
             border-color: #FF4B4B !important;
         }}
 
-        /* 6. CARD STYLING */
+        /* CARD STYLING */
         .rec-card {{
             background: {card_bg};
             backdrop-filter: blur(10px);
@@ -426,7 +458,6 @@ def main_app():
             color: {text_color};
         }}
 
-        /* Input Labels */
         div[data-testid="stSelectbox"] > label {{
             color: {input_label_color} !important;
             font-weight: 900 !important;
@@ -477,11 +508,11 @@ def main_app():
                     else:
                         movie_info = "No overview available."
                 
-                # COLLABORATIVE: Hide Overview (Requirement #2)
+                # COLLABORATIVE: Hide Overview
                 else:
-                    movie_info = "" # Intentionally empty
+                    movie_info = "" 
 
-                # GENRE: Removed (Requirement #1)
+                # GENRE: Removed completely from Cards
                 
                 result.append({
                     'title': title,
