@@ -245,10 +245,8 @@ def login_page():
                 elif st.session_state.fp_step == 2:
                     st.info(f"Enter the 6-digit code sent to the email for **{st.session_state.fp_username}**")
                     otp_input = st.text_input("OTP Code", key="otp_input")
-                    new_pass = st.text_input("New Password", type="password", key="np_input")
-                    conf_pass = st.text_input("Confirm Password", type="password", key="cp_input")
                     
-                    # --- DISPLAY PASSWORD STRENGTH REQUIREMENTS ---
+                    # Password Requirements Display
                     st.markdown("""
                     <div style="font-size: 0.8rem; color: gray; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #FF4B4B;">
                         <strong>Password Rules:</strong><br>
@@ -257,19 +255,21 @@ def login_page():
                         • At least 1 Uppercase Letter (A-Z)
                     </div>
                     """, unsafe_allow_html=True)
+
+                    new_pass = st.text_input("New Password", type="password", key="np_input")
+                    conf_pass = st.text_input("Confirm Password", type="password", key="cp_input")
                     
                     c1, c2 = st.columns(2)
                     with c1:
                         if st.button("Reset Password", type="primary"):
                             if otp_input == st.session_state.fp_otp:
                                 if new_pass == conf_pass:
-                                    # CHECK STRENGTH
                                     is_strong, msg = check_password_strength(new_pass)
                                     if is_strong:
                                         reset_password(st.session_state.fp_username, new_pass)
                                         st.success("✅ Password Reset Successfully! Login now.")
                                         
-                                        # CLOSE SECTION & RESET
+                                        # CLOSE SECTION & RESET STATES
                                         st.session_state.fp_step = 1
                                         st.session_state.fp_otp = None
                                         st.session_state.fp_username = None
@@ -304,10 +304,20 @@ def login_page():
             
             if st.button("✨ Create Account", use_container_width=True):
                 if s_user and s_pass and s_email:
-                    # Function now checks password strength internally
                     success, msg = register_user(s_user, s_email, s_pass)
                     if success:
-                        st.success(f"Account created! ID: {msg}. Please Login.")
+                        # --- AUTO LOGIN LOGIC ---
+                        st.session_state.logged_in = True
+                        st.session_state.username = s_user
+                        # Construct user_info locally since we just created it
+                        st.session_state.user_info = {
+                            'email': s_email,
+                            'password': hash_password(s_pass),
+                            'user_id': msg, # msg contains the user_id on success
+                            'history': []
+                        }
+                        st.success("Account created! Logging you in...")
+                        st.rerun()
                     else:
                         st.error(msg)
                 else:
@@ -401,13 +411,11 @@ def main_app():
 
         st.divider()
 
-       # 3. Engine Selection
-        st.markdown("### 🚀 Engines")
-        st.markdown('<div style="height: 10px;"></div>', unsafe_allow_html=True)
+        # 3. Engine Selection (Blank Space Above)
         filter_method = st.radio(
-            "Recommendation Engine",
+            " ", # Internal label set to space to remove "Select"
             ('Content-Based Filtering', 'Collaborative Filtering'),
-            label_visibility="collapsed" # This forces the label above to be invisible
+            label_visibility="collapsed"
         )
 
         st.divider()
@@ -458,7 +466,7 @@ def main_app():
             for member in team:
                 st.write(member)
 
-        with st.expander("ℹ️ Details"):
+        with st.expander("ℹ️ About"):
             st.write("**Group 4 Final Project**")
             st.write("Course: **Machine Learning & AI**")
             st.write("Provider: **Thrive Africa**")
