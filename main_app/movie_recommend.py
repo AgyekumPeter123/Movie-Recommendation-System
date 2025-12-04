@@ -402,6 +402,7 @@ def main_app():
         st.divider()
 
        # 3. Engine Selection
+        st.markdown("### 🚀 Engines")
         filter_method = st.radio(
             "Recommendation Engine",
             ('Content-Based Filtering', 'Collaborative Filtering'),
