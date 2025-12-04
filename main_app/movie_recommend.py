@@ -456,7 +456,7 @@ def main_app():
             for member in team:
                 st.write(member)
 
-        with st.expander("ℹ️ About"):
+        with st.expander("ℹ️ Details"):
             st.write("**Group 4 Final Project**")
             st.write("Course: **Machine Learning & AI**")
             st.write("Provider: **Thrive Africa**")
