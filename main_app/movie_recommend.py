@@ -225,7 +225,6 @@ def main_app():
             
         st.divider()
         
-        # Create full export string
         export_string = f"History Export (Group 4)\n\nMovie Searched: {selected_movie}\nDate: {date}\n\nRecommendations:\n{display_text}"
         
         st.download_button(
@@ -290,13 +289,11 @@ def main_app():
                 st.caption("No history.")
             else:
                 for i, h in enumerate(reversed(history[-5:])):
-                    # Columns for Title and Eye Button
                     hc1, hc2 = st.columns([4, 1])
                     with hc1:
                         st.markdown(f"**🎬 {h['selected_movie']}**")
                         st.caption(f"{h['timestamp']}")
                     with hc2:
-                        # Mini Button to trigger dialog
                         if st.button("👁️", key=f"hist_btn_{i}", help="View & Download"):
                             show_history_popup(h['selected_movie'], h['timestamp'], h['recommendations'])
                     st.markdown("---")
@@ -431,19 +428,19 @@ def main_app():
         /* MODERN RADIO BUTTON - FIX EMPTY TILE & STYLE OPTIONS */
         
         /* Hide the Main Widget Label Container completely to remove the empty tile */
-        [data-testid="stSidebar"] .stRadio > label {
+        [data-testid="stSidebar"] .stRadio > label {{
             display: none !important;
-        }
+        }}
         
         /* Style the radio group container */
-        [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {
+        [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {{
             flex-direction: row;
             gap: 10px;
             margin-top: -10px; /* Pull up to remove gap */
-        }
+        }}
         
         /* Target the Option Labels (The visible tiles) */
-        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label {
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label {{
             background-color: #f0f2f6 !important;
             padding: 10px 15px !important;
             border-radius: 8px !important;
@@ -456,15 +453,15 @@ def main_app():
             text-align: center;
             display: flex;
             justify-content: center;
-        }
+        }}
         
         /* Selected State */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] div[aria-checked="true"] + div label,
-        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] div[aria-checked="true"] label {
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] div[aria-checked="true"] label {{
             background-color: #FF4B4B !important;
             color: white !important;
             border-color: #FF4B4B !important;
-        }
+        }}
 
         /* CARD STYLING */
         .rec-card {{
