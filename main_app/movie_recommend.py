@@ -7,6 +7,9 @@ import json
 import hashlib
 import uuid
 import re
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
 # --- PAGE CONFIG ---
@@ -18,6 +21,12 @@ st.set_page_config(
 
 # --- FILE PATHS ---
 USER_DB_FILE = 'user_database.json'
+
+# --- EMAIL CREDENTIALS (HARDCODED) ---
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SENDER_EMAIL = "agyekumpeter123@gmail.com"
+APP_PASSWORD = "lftr wrba rwsq blst"
 
 # --- AUTHENTICATION & DATA FUNCTIONS ---
 
@@ -47,7 +56,38 @@ def check_password_strength(password):
         return False, "⚠️ Password must contain at least one uppercase letter."
     return True, "Valid"
 
-def register_user(username, password):
+# --- EMAIL OTP FUNCTION ---
+def send_otp_email(receiver_email, otp):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = receiver_email
+        msg['Subject'] = "🔐 Group 4: Password Reset OTP"
+
+        body = f"""
+        <html>
+          <body>
+            <h2 style="color: #FF4B4B;">Group 4 Movie Recommender</h2>
+            <p>You requested a password reset.</p>
+            <p style="font-size: 18px;">Your OTP code is: <strong>{otp}</strong></p>
+            <p>If you did not request this, please ignore this email.</p>
+          </body>
+        </html>
+        """
+        msg.attach(MIMEText(body, 'html'))
+
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SENDER_EMAIL, APP_PASSWORD)
+        server.sendmail(SENDER_EMAIL, receiver_email, msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        st.error(f"Email Error: {e}")
+        return False
+
+# --- REGISTRATION ---
+def register_user(username, email, password):
     # Check Strength
     is_strong, msg = check_password_strength(password)
     if not is_strong:
@@ -57,8 +97,14 @@ def register_user(username, password):
     if username in db:
         return False, "⚠️ Username already exists!"
     
+    # Check if email exists
+    for user, data in db.items():
+        if data.get('email') == email:
+            return False, "⚠️ Email already registered!"
+
     user_id = str(uuid.uuid4())[:8]
     db[username] = {
+        'email': email,
         'password': hash_password(password),
         'user_id': user_id,
         'history': []
@@ -73,6 +119,14 @@ def authenticate_user(username, password):
     if db[username]['password'] == hash_password(password):
         return True, db[username]
     return False, None
+
+def reset_password(username, new_password):
+    db = load_db()
+    if username in db:
+        db[username]['password'] = hash_password(new_password)
+        save_db(db)
+        return True
+    return False
 
 def save_user_history(username, selected_movie, recommendations):
     db = load_db()
@@ -109,6 +163,14 @@ if 'username' not in st.session_state:
 if 'user_info' not in st.session_state:
     st.session_state.user_info = None
 
+# Forgot Password States
+if 'fp_step' not in st.session_state:
+    st.session_state.fp_step = 1
+if 'fp_otp' not in st.session_state:
+    st.session_state.fp_otp = None
+if 'fp_username' not in st.session_state:
+    st.session_state.fp_username = None
+
 # --- EXTERNAL LINKS ---
 external_links = {
     "Nkiri (Download)": "https://thenkiri.com",
@@ -131,6 +193,7 @@ def login_page():
         
         tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
 
+        # --- LOGIN TAB ---
         with tab1:
             st.markdown("##### Welcome Back")
             l_user = st.text_input("Username", key="l_user")
@@ -150,12 +213,62 @@ def login_page():
                 else:
                     st.warning("Please fill all fields.")
 
+            # --- FORGOT PASSWORD SECTION ---
+            with st.expander("❓ Forgot Password?"):
+                if st.session_state.fp_step == 1:
+                    fp_user = st.text_input("Enter Username to Reset", key="fp_user_in")
+                    if st.button("Send OTP"):
+                        db = load_db()
+                        if fp_user in db:
+                            user_email = db[fp_user].get('email')
+                            if user_email:
+                                import random, string
+                                otp_code = ''.join(random.choices(string.digits, k=6))
+                                
+                                with st.spinner("Sending Email..."):
+                                    if send_otp_email(user_email, otp_code):
+                                        st.session_state.fp_otp = otp_code
+                                        st.session_state.fp_username = fp_user
+                                        st.session_state.fp_step = 2
+                                        st.toast(f"📧 OTP sent to {user_email}!", icon="✅")
+                                        st.rerun()
+                                    else:
+                                        st.error("Failed to send email.")
+                            else:
+                                st.error("No email associated with this account.")
+                        else:
+                            st.error("Username not found.")
+
+                elif st.session_state.fp_step == 2:
+                    st.info(f"Enter the OTP sent to email for **{st.session_state.fp_username}**")
+                    otp_input = st.text_input("OTP Code", key="otp_input")
+                    new_pass = st.text_input("New Password", type="password", key="np_input")
+                    conf_pass = st.text_input("Confirm Password", type="password", key="cp_input")
+                    
+                    if st.button("Reset Password", type="primary"):
+                        if otp_input == st.session_state.fp_otp:
+                            if new_pass == conf_pass:
+                                is_strong, msg = check_password_strength(new_pass)
+                                if is_strong:
+                                    reset_password(st.session_state.fp_username, new_pass)
+                                    st.success("Password Reset! Please Login.")
+                                    st.session_state.fp_step = 1
+                                    st.session_state.fp_otp = None
+                                    st.rerun()
+                                else:
+                                    st.error(msg)
+                            else:
+                                st.error("Passwords do not match.")
+                        else:
+                            st.error("Invalid OTP.")
+
+        # --- SIGN UP TAB ---
         with tab2:
             st.markdown("##### New User?")
             s_user = st.text_input("Choose Username", key="s_user")
+            s_email = st.text_input("Enter Email", key="s_email")
             s_pass = st.text_input("Choose Password", type="password", key="s_pass")
             
-            # --- PASSWORD REQUIREMENTS DISPLAY ---
             st.markdown("""
             <div style="font-size: 0.8rem; color: gray; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #FF4B4B;">
                 <strong>Password Rules:</strong><br>
@@ -166,8 +279,8 @@ def login_page():
             """, unsafe_allow_html=True)
             
             if st.button("✨ Create Account", use_container_width=True):
-                if s_user and s_pass:
-                    success, msg = register_user(s_user, s_pass)
+                if s_user and s_pass and s_email:
+                    success, msg = register_user(s_user, s_email, s_pass)
                     if success:
                         st.success(f"Account created! ID: {msg}. Please Login.")
                     else:
@@ -217,7 +330,6 @@ def main_app():
         st.caption(f"📅 Searched on: {date}")
         st.divider()
         
-        # Prepare content for display and export
         display_text = ""
         for i, title in enumerate(rec_titles, 1):
             st.markdown(f"**{i}. {title}**")
@@ -264,9 +376,9 @@ def main_app():
 
         st.divider()
 
-        # 3. Engine Selection (Blank Space Above)
+        # 3. Engine Selection (Label Hidden)
         filter_method = st.radio(
-            " ", # Internal label set to space to remove "Select"
+            "EngineSelection", # Internal ID key
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
@@ -362,6 +474,7 @@ def main_app():
         card_border = "rgba(0, 0, 0, 0.05)"
 
     # --- CSS INJECTION ---
+    # Note: Double brackets {{ }} are used to escape Python f-strings
     st.markdown(f"""
         <style>
         /* MAIN APP COLORS */
@@ -427,8 +540,8 @@ def main_app():
 
         /* MODERN RADIO BUTTON - FIX EMPTY TILE & STYLE OPTIONS */
         
-        /* Hide the Main Widget Label Container completely to remove the empty tile */
-        [data-testid="stSidebar"] .stRadio > label {{
+        /* Hide the Main Widget Label Container completely */
+        div.row-widget.stRadio > label {{
             display: none !important;
         }}
         
@@ -436,7 +549,7 @@ def main_app():
         [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {{
             flex-direction: row;
             gap: 10px;
-            margin-top: -10px; /* Pull up to remove gap */
+            margin-top: -20px !important; /* Forces it up to cover any gap */
         }}
         
         /* Target the Option Labels (The visible tiles) */
@@ -520,14 +633,14 @@ def main_app():
         @keyframes glow {{ from {{ text-shadow: 0 0 2px {input_label_color}; }} to {{ text-shadow: 0 0 10px #FF4B4B; }} }}
         
         /* CONSTANT PULSE ANIMATION FOR HEADER */
-        @keyframes pulse-header {{
+        @keyframes breathing {{
             0% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.03); text-shadow: 0 0 10px rgba(255, 75, 75, 0.3); }}
+            50% {{ transform: scale(1.03); text-shadow: 0 0 15px rgba(255, 75, 75, 0.3); }}
             100% {{ transform: scale(1); }}
         }}
         
         .main-header {{
-            animation: pulse-header 3s infinite ease-in-out; 
+            animation: breathing 3s infinite ease-in-out; 
             display: inline-block; 
         }}
 
@@ -596,7 +709,7 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    # UPDATED HEADER WITH CONSTANT ANIMATION CLASS
+    # UPDATED HEADER WITH CONSTANT BREATHING ANIMATION
     st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
