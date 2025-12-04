@@ -7,6 +7,8 @@ import json
 import hashlib
 import uuid
 import re
+import random
+import string
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -22,7 +24,7 @@ st.set_page_config(
 # --- FILE PATHS ---
 USER_DB_FILE = 'user_database.json'
 
-# --- EMAIL CREDENTIALS (HARDCODED) ---
+# --- EMAIL CREDENTIALS (HARDCODED AS REQUESTED) ---
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SENDER_EMAIL = "agyekumpeter123@gmail.com"
@@ -66,10 +68,12 @@ def send_otp_email(receiver_email, otp):
 
         body = f"""
         <html>
-          <body>
+          <body style="font-family: Arial, sans-serif;">
             <h2 style="color: #FF4B4B;">Group 4 Movie Recommender</h2>
             <p>You requested a password reset.</p>
-            <p style="font-size: 18px;">Your OTP code is: <strong>{otp}</strong></p>
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; display: inline-block;">
+                <span style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">{otp}</span>
+            </div>
             <p>If you did not request this, please ignore this email.</p>
           </body>
         </html>
@@ -86,7 +90,7 @@ def send_otp_email(receiver_email, otp):
         st.error(f"Email Error: {e}")
         return False
 
-# --- REGISTRATION ---
+# --- REGISTRATION (UPDATED WITH EMAIL) ---
 def register_user(username, email, password):
     # Check Strength
     is_strong, msg = check_password_strength(password)
@@ -222,10 +226,9 @@ def login_page():
                         if fp_user in db:
                             user_email = db[fp_user].get('email')
                             if user_email:
-                                import random, string
                                 otp_code = ''.join(random.choices(string.digits, k=6))
                                 
-                                with st.spinner("Sending Email..."):
+                                with st.spinner("Sending OTP via Email..."):
                                     if send_otp_email(user_email, otp_code):
                                         st.session_state.fp_otp = otp_code
                                         st.session_state.fp_username = fp_user
@@ -233,34 +236,44 @@ def login_page():
                                         st.toast(f"📧 OTP sent to {user_email}!", icon="✅")
                                         st.rerun()
                                     else:
-                                        st.error("Failed to send email.")
+                                        st.error("Failed to send email. Check credentials.")
                             else:
                                 st.error("No email associated with this account.")
                         else:
                             st.error("Username not found.")
 
                 elif st.session_state.fp_step == 2:
-                    st.info(f"Enter the OTP sent to email for **{st.session_state.fp_username}**")
+                    st.info(f"Enter the 6-digit code sent to the email for **{st.session_state.fp_username}**")
                     otp_input = st.text_input("OTP Code", key="otp_input")
                     new_pass = st.text_input("New Password", type="password", key="np_input")
                     conf_pass = st.text_input("Confirm Password", type="password", key="cp_input")
                     
-                    if st.button("Reset Password", type="primary"):
-                        if otp_input == st.session_state.fp_otp:
-                            if new_pass == conf_pass:
-                                is_strong, msg = check_password_strength(new_pass)
-                                if is_strong:
-                                    reset_password(st.session_state.fp_username, new_pass)
-                                    st.success("Password Reset! Please Login.")
-                                    st.session_state.fp_step = 1
-                                    st.session_state.fp_otp = None
-                                    st.rerun()
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        if st.button("Reset Password", type="primary"):
+                            if otp_input == st.session_state.fp_otp:
+                                if new_pass == conf_pass:
+                                    is_strong, msg = check_password_strength(new_pass)
+                                    if is_strong:
+                                        reset_password(st.session_state.fp_username, new_pass)
+                                        st.success("✅ Password Reset Successfully! Login now.")
+                                        # Reset States
+                                        st.session_state.fp_step = 1
+                                        st.session_state.fp_otp = None
+                                        st.session_state.fp_username = None
+                                        # Optional: rerunning to clear the inputs
+                                        # st.rerun()
+                                    else:
+                                        st.error(msg)
                                 else:
-                                    st.error(msg)
+                                    st.error("Passwords do not match.")
                             else:
-                                st.error("Passwords do not match.")
-                        else:
-                            st.error("Invalid OTP.")
+                                st.error("Invalid OTP.")
+                    with c2:
+                        if st.button("Cancel"):
+                            st.session_state.fp_step = 1
+                            st.session_state.fp_otp = None
+                            st.rerun()
 
         # --- SIGN UP TAB ---
         with tab2:
@@ -376,9 +389,9 @@ def main_app():
 
         st.divider()
 
-        # 3. Engine Selection (Label Hidden)
+        # 3. Engine Selection (Blank Space Above)
         filter_method = st.radio(
-            "EngineSelection", # Internal ID key
+            " ", # Internal label set to space to remove "Select"
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
@@ -635,7 +648,7 @@ def main_app():
         /* CONSTANT PULSE ANIMATION FOR HEADER */
         @keyframes breathing {{
             0% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.03); text-shadow: 0 0 15px rgba(255, 75, 75, 0.3); }}
+            50% {{ transform: scale(1.03); text-shadow: 0 0 10px rgba(255, 75, 75, 0.3); }}
             100% {{ transform: scale(1); }}
         }}
         
