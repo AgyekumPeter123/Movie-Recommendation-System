@@ -402,6 +402,7 @@ def main_app():
         st.divider()
 
         # 3. Engine Selection (Blank Space Above)
+         st.markdown("### 📜 Choose Engine")
         filter_method = st.radio(
             " ", # Internal label set to space to remove "Select"
             ('Content-Based Filtering', 'Collaborative Filtering'),
