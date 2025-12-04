@@ -248,18 +248,28 @@ def login_page():
                     new_pass = st.text_input("New Password", type="password", key="np_input")
                     conf_pass = st.text_input("Confirm Password", type="password", key="cp_input")
                     
+                    # --- DISPLAY PASSWORD STRENGTH REQUIREMENTS ---
+                    st.markdown("""
+                    <div style="font-size: 0.8rem; color: gray; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #FF4B4B;">
+                        <strong>Password Rules:</strong><br>
+                        • Minimum 6 characters<br>
+                        • At least 1 Number (0-9)<br>
+                        • At least 1 Uppercase Letter (A-Z)
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
                     c1, c2 = st.columns(2)
                     with c1:
                         if st.button("Reset Password", type="primary"):
                             if otp_input == st.session_state.fp_otp:
                                 if new_pass == conf_pass:
-                                    # CHECK STRENGTH AGAIN HERE
+                                    # CHECK STRENGTH
                                     is_strong, msg = check_password_strength(new_pass)
                                     if is_strong:
                                         reset_password(st.session_state.fp_username, new_pass)
                                         st.success("✅ Password Reset Successfully! Login now.")
                                         
-                                        # CLOSE SECTION (RESET STATES)
+                                        # CLOSE SECTION & RESET
                                         st.session_state.fp_step = 1
                                         st.session_state.fp_otp = None
                                         st.session_state.fp_username = None
@@ -393,7 +403,7 @@ def main_app():
 
         # 3. Engine Selection (Blank Space Above)
         filter_method = st.radio(
-            " ", 
+            " ", # Internal label set to space to remove "Select"
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
@@ -724,7 +734,7 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    # UPDATED HEADER WITH CONSTANT ANIMATION CLASS
+    # UPDATED HEADER WITH CONSTANT BREATHING ANIMATION
     st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
