@@ -210,6 +210,32 @@ def main_app():
             return match.iloc[0]
         return None
 
+    # --- HISTORY POPUP DIALOG ---
+    @st.dialog("📜 Historical Record")
+    def show_history_popup(selected_movie, date, rec_titles):
+        st.subheader(f"Source: {selected_movie}")
+        st.caption(f"📅 Searched on: {date}")
+        st.divider()
+        
+        # Prepare content for display and export
+        display_text = ""
+        for i, title in enumerate(rec_titles, 1):
+            st.markdown(f"**{i}. {title}**")
+            display_text += f"{i}. {title}\n"
+            
+        st.divider()
+        
+        # Create full export string
+        export_string = f"History Export (Group 4)\n\nMovie Searched: {selected_movie}\nDate: {date}\n\nRecommendations:\n{display_text}"
+        
+        st.download_button(
+            label="💾 Download Record",
+            data=export_string,
+            file_name=f"History_{selected_movie.replace(' ', '_')}.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
+
     # --- SESSION STATE ---
     if 'recommendations' not in st.session_state:
         st.session_state.recommendations = None
@@ -239,16 +265,16 @@ def main_app():
 
         st.divider()
 
-        # 3. Engine Selection 
+        # 3. Engine Selection (Blank Space Above)
         filter_method = st.radio(
-            "Engine",
+            " ", # Internal label set to space to remove "Select"
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
 
         st.divider()
 
-        # 4. History
+        # 4. History with Mini Buttons
         h_col1, h_col2 = st.columns([3, 1])
         with h_col1:
             st.markdown("### 📜 History")
@@ -263,9 +289,16 @@ def main_app():
             if not history:
                 st.caption("No history.")
             else:
-                for h in reversed(history[-5:]):
-                    st.markdown(f"**🎬 {h['selected_movie']}**")
-                    st.caption(f"{h['timestamp']}")
+                for i, h in enumerate(reversed(history[-5:])):
+                    # Columns for Title and Eye Button
+                    hc1, hc2 = st.columns([4, 1])
+                    with hc1:
+                        st.markdown(f"**🎬 {h['selected_movie']}**")
+                        st.caption(f"{h['timestamp']}")
+                    with hc2:
+                        # Mini Button to trigger dialog
+                        if st.button("👁️", key=f"hist_btn_{i}", help="View & Download"):
+                            show_history_popup(h['selected_movie'], h['timestamp'], h['recommendations'])
                     st.markdown("---")
 
         st.divider()
@@ -395,12 +428,22 @@ def main_app():
             color: #000000 !important;
         }}
 
-        /* MODERN RADIO BUTTON */
-        [data-testid="stSidebar"] .stRadio > div {{
+        /* MODERN RADIO BUTTON - FIX EMPTY TILE & STYLE OPTIONS */
+        
+        /* Hide the Main Widget Label Container completely to remove the empty tile */
+        [data-testid="stSidebar"] .stRadio > label {
+            display: none !important;
+        }
+        
+        /* Style the radio group container */
+        [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {
             flex-direction: row;
             gap: 10px;
-        }}
-        [data-testid="stSidebar"] .stRadio label {{
+            margin-top: -10px; /* Pull up to remove gap */
+        }
+        
+        /* Target the Option Labels (The visible tiles) */
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label {
             background-color: #f0f2f6 !important;
             padding: 10px 15px !important;
             border-radius: 8px !important;
@@ -413,12 +456,15 @@ def main_app():
             text-align: center;
             display: flex;
             justify-content: center;
-        }}
-        [data-testid="stSidebar"] .stRadio div[aria-checked="true"] label {{
+        }
+        
+        /* Selected State */
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] div[aria-checked="true"] + div label,
+        [data-testid="stSidebar"] .stRadio div[role="radiogroup"] div[aria-checked="true"] label {
             background-color: #FF4B4B !important;
             color: white !important;
             border-color: #FF4B4B !important;
-        }}
+        }
 
         /* CARD STYLING */
         .rec-card {{
@@ -476,15 +522,15 @@ def main_app():
         }}
         @keyframes glow {{ from {{ text-shadow: 0 0 2px {input_label_color}; }} to {{ text-shadow: 0 0 10px #FF4B4B; }} }}
         
-        /* CONSTANT PULSE ANIMATION FOR HEADER (BREATHING EFFECT) */
-        @keyframes breathing {{
+        /* CONSTANT PULSE ANIMATION FOR HEADER */
+        @keyframes pulse-header {{
             0% {{ transform: scale(1); }}
-            50% {{ transform: scale(1.05); text-shadow: 0 0 15px rgba(255, 75, 75, 0.5); }}
+            50% {{ transform: scale(1.03); text-shadow: 0 0 10px rgba(255, 75, 75, 0.3); }}
             100% {{ transform: scale(1); }}
         }}
         
         .main-header {{
-            animation: breathing 3s infinite ease-in-out; 
+            animation: pulse-header 3s infinite ease-in-out; 
             display: inline-block; 
         }}
 
@@ -553,7 +599,7 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    # UPDATED HEADER WITH CONSTANT BREATHING ANIMATION
+    # UPDATED HEADER WITH CONSTANT ANIMATION CLASS
     st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
