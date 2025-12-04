@@ -400,14 +400,15 @@ def main_app():
             st.rerun()
 
         st.divider()
-       # 3. Engine Selection
-st.markdown("## 📜 Choose Engine")  # Your custom header
 
-filter_method = st.radio(
-    "Recommendation Engine",  # <--- Use a descriptive name here (it stays hidden)
-    ('Content-Based Filtering', 'Collaborative Filtering'),
-    label_visibility="collapsed" # This forces the label above to be invisible
-)
+       # 3. Engine Selection
+        st.markdown("## 📜 Choose Engine")  # Your custom header
+
+        filter_method = st.radio(
+            "Recommendation Engine",  # <--- Use a descriptive name here (it stays hidden)
+            ('Content-Based Filtering', 'Collaborative Filtering'),
+            label_visibility="collapsed" # This forces the label above to be invisible
+        )
 
         st.divider()
 
