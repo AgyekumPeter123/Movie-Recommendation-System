@@ -24,7 +24,7 @@ st.set_page_config(
 # --- FILE PATHS ---
 USER_DB_FILE = 'user_database.json'
 
-# --- EMAIL CREDENTIALS (HARDCODED AS REQUESTED) ---
+# --- EMAIL CREDENTIALS ---
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SENDER_EMAIL = "agyekumpeter123@gmail.com"
@@ -90,9 +90,9 @@ def send_otp_email(receiver_email, otp):
         st.error(f"Email Error: {e}")
         return False
 
-# --- REGISTRATION (UPDATED WITH EMAIL) ---
+# --- REGISTRATION ---
 def register_user(username, email, password):
-    # Check Strength
+    # 1. Check Strength
     is_strong, msg = check_password_strength(password)
     if not is_strong:
         return False, msg
@@ -101,7 +101,7 @@ def register_user(username, email, password):
     if username in db:
         return False, "⚠️ Username already exists!"
     
-    # Check if email exists
+    # 2. Check if email exists
     for user, data in db.items():
         if data.get('email') == email:
             return False, "⚠️ Email already registered!"
@@ -253,16 +253,17 @@ def login_page():
                         if st.button("Reset Password", type="primary"):
                             if otp_input == st.session_state.fp_otp:
                                 if new_pass == conf_pass:
+                                    # CHECK STRENGTH AGAIN HERE
                                     is_strong, msg = check_password_strength(new_pass)
                                     if is_strong:
                                         reset_password(st.session_state.fp_username, new_pass)
                                         st.success("✅ Password Reset Successfully! Login now.")
-                                        # Reset States
+                                        
+                                        # CLOSE SECTION (RESET STATES)
                                         st.session_state.fp_step = 1
                                         st.session_state.fp_otp = None
                                         st.session_state.fp_username = None
-                                        # Optional: rerunning to clear the inputs
-                                        # st.rerun()
+                                        st.rerun()
                                     else:
                                         st.error(msg)
                                 else:
@@ -293,6 +294,7 @@ def login_page():
             
             if st.button("✨ Create Account", use_container_width=True):
                 if s_user and s_pass and s_email:
+                    # Function now checks password strength internally
                     success, msg = register_user(s_user, s_email, s_pass)
                     if success:
                         st.success(f"Account created! ID: {msg}. Please Login.")
@@ -391,7 +393,7 @@ def main_app():
 
         # 3. Engine Selection (Blank Space Above)
         filter_method = st.radio(
-            " ", # Internal label set to space to remove "Select"
+            " ", 
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
@@ -722,7 +724,7 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    # UPDATED HEADER WITH CONSTANT BREATHING ANIMATION
+    # UPDATED HEADER WITH CONSTANT ANIMATION CLASS
     st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
