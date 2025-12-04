@@ -403,7 +403,7 @@ def main_app():
 
        # 3. Engine Selection
         st.markdown("### 🚀 Engines")
-        
+        st.markdown('<div style="height: 10px;"></div>', unsafe_allow_html=True)
         filter_method = st.radio(
             "Recommendation Engine",
             ('Content-Based Filtering', 'Collaborative Filtering'),
