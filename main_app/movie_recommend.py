@@ -185,11 +185,81 @@ external_links = {
 
 # --- LOGIN / SIGNUP PAGE ---
 def login_page():
+    # === ANIMATION INJECTION START ===
+    st.markdown("""
+    <style>
+        /* Container for the background animation */
+        .animation-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 0; /* Behind the form */
+            pointer-events: none; /* Let clicks pass through */
+            overflow: hidden;
+        }
+
+        .anim-text {
+            font-size: 8rem; 
+            font-weight: 900;
+            color: rgba(128, 128, 128, 0.15); /* Subtle Grey transparent */
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Specifics for G4 */
+        .g4-part {
+            animation: moveFromLeft 6s ease-in-out infinite;
+            margin-right: 20px; 
+        }
+
+        /* Specifics for SOLUTION */
+        .solution-part {
+            animation: moveFromRight 6s ease-in-out infinite;
+        }
+
+        /* Animation logic for G4 */
+        @keyframes moveFromLeft {
+            0% { transform: translateX(-100vw); opacity: 0; }
+            30% { transform: translateX(0); opacity: 1; }
+            70% { transform: translateX(0); opacity: 1; }
+            90% { transform: translateX(0); opacity: 0; }
+            100% { transform: translateX(-100vw); opacity: 0; }
+        }
+
+        /* Animation logic for SOLUTION */
+        @keyframes moveFromRight {
+            0% { transform: translateX(100vw); opacity: 0; }
+            30% { transform: translateX(0); opacity: 1; }
+            70% { transform: translateX(0); opacity: 1; }
+            90% { transform: translateX(0); opacity: 0; }
+            100% { transform: translateX(100vw); opacity: 0; }
+        }
+        
+        /* Ensure the login card sits ON TOP of the animation */
+        div[data-testid="stVerticalBlock"] > div {
+            z-index: 2; 
+            position: relative;
+        }
+    </style>
+
+    <div class="animation-wrapper">
+        <div class="anim-text g4-part">G4</div>
+        <div class="anim-text solution-part">SOLUTION</div>
+    </div>
+    """, unsafe_allow_html=True)
+    # === ANIMATION INJECTION END ===
+
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
+        # Added a slight backdrop blur to the card so text doesn't clash
         st.markdown("""
-        <div style="background-color: rgba(255, 75, 75, 0.05); padding: 20px; border-radius: 20px; border: 1px solid rgba(255, 75, 75, 0.2); text-align: center; margin-bottom: 20px;">
+        <div style="background-color: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px); padding: 20px; border-radius: 20px; border: 1px solid rgba(255, 75, 75, 0.2); text-align: center; margin-bottom: 20px;">
             <h1 style='color: #FF4B4B; margin:0;'>🍿 Group 4 Cinema</h1>
             <p style='margin:0; opacity: 0.7;'>Login to access your personalized AI recommendations</p>
         </div>
@@ -246,7 +316,7 @@ def login_page():
                     st.info(f"Enter the 6-digit code sent to the email for **{st.session_state.fp_username}**")
                     otp_input = st.text_input("OTP Code", key="otp_input")
                     
-                    # Password Requirements Display
+                    # --- PASSWORD REQUIREMENTS (RESET) ---
                     st.markdown("""
                     <div style="font-size: 0.8rem; color: gray; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #FF4B4B;">
                         <strong>Password Rules:</strong><br>
@@ -269,7 +339,7 @@ def login_page():
                                         reset_password(st.session_state.fp_username, new_pass)
                                         st.success("✅ Password Reset Successfully! Login now.")
                                         
-                                        # CLOSE SECTION & RESET STATES
+                                        # CLOSE SECTION & RESET
                                         st.session_state.fp_step = 1
                                         st.session_state.fp_otp = None
                                         st.session_state.fp_username = None
@@ -293,6 +363,7 @@ def login_page():
             s_email = st.text_input("Enter Email", key="s_email")
             s_pass = st.text_input("Choose Password", type="password", key="s_pass")
             
+            # --- PASSWORD REQUIREMENTS (SIGNUP) ---
             st.markdown("""
             <div style="font-size: 0.8rem; color: gray; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #FF4B4B;">
                 <strong>Password Rules:</strong><br>
@@ -306,14 +377,13 @@ def login_page():
                 if s_user and s_pass and s_email:
                     success, msg = register_user(s_user, s_email, s_pass)
                     if success:
-                        # --- AUTO LOGIN LOGIC ---
+                        # AUTO LOGIN
                         st.session_state.logged_in = True
                         st.session_state.username = s_user
-                        # Construct user_info locally since we just created it
                         st.session_state.user_info = {
                             'email': s_email,
                             'password': hash_password(s_pass),
-                            'user_id': msg, # msg contains the user_id on success
+                            'user_id': msg, 
                             'history': []
                         }
                         st.success("Account created! Logging you in...")
@@ -509,7 +579,6 @@ def main_app():
         card_border = "rgba(0, 0, 0, 0.05)"
 
     # --- CSS INJECTION ---
-    # Note: Double brackets {{ }} are used to escape Python f-strings
     st.markdown(f"""
         <style>
         /* MAIN APP COLORS */
@@ -744,7 +813,7 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    # UPDATED HEADER WITH CONSTANT BREATHING ANIMATION
+    # UPDATED HEADER WITH CONSTANT ANIMATION CLASS
     st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
