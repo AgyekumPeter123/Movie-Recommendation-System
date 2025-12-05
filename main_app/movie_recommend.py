@@ -3,7 +3,7 @@ import pickle
 import gzip
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components  # <--- IMPORT ADDED
+import streamlit.components.v1 as components
 import json
 import hashlib
 import uuid
@@ -17,7 +17,7 @@ from datetime import datetime
 
 # --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="G4 SOLUTION - Movie Recommender",
+    page_title="Group 4 - Movie Recommender",
     layout="wide",
     page_icon="🎥"
 )
@@ -65,12 +65,12 @@ def send_otp_email(receiver_email, otp):
         msg = MIMEMultipart()
         msg['From'] = SENDER_EMAIL
         msg['To'] = receiver_email
-        msg['Subject'] = "🔐 G4 SOLUTION: Password Reset OTP"
+        msg['Subject'] = "🔐 Group 4: Password Reset OTP"
 
         body = f"""
         <html>
           <body style="font-family: Arial, sans-serif;">
-            <h2 style="color: #FF4B4B;">G4 Solution Movie Recommender</h2>
+            <h2 style="color: #FF4B4B;">Group 4 Movie Recommender</h2>
             <p>You requested a password reset.</p>
             <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; display: inline-block;">
                 <span style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">{otp}</span>
@@ -256,9 +256,7 @@ def login_page():
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        # === 🎯 REPLACEMENT: JAVASCRIPT TYPEWRITER COMPONENT ===
-        # This replaces the broken CSS typewriter and ensures smooth typing logic.
-        
+        # === TYPEWRITER COMPONENT ===
         typewriter_html = """
         <!DOCTYPE html>
         <html>
@@ -325,10 +323,10 @@ def login_page():
 
             <script>
             const phrases = [
-                "G4 SOLUTION CINEMA",
+                "GROUP 4 CINEMA",
                 "YOUR BEST AI MOVIE RECOMMENDER",
                 "BY G4 SOLUTION",
-                "PROUDLY EMERGED FROM THRIVE AFRICA"
+                "PROUDLY FROM THRIVE AFRICA"
             ];
 
             let i = 0;
@@ -364,7 +362,6 @@ def login_page():
         </body>
         </html>
         """
-        # Render the component
         components.html(typewriter_html, height=130, scrolling=False)
         
         tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
@@ -418,7 +415,6 @@ def login_page():
                     st.info(f"Enter the 6-digit code sent to the email for **{st.session_state.fp_username}**")
                     otp_input = st.text_input("OTP Code", key="otp_input")
                     
-                    # --- PASSWORD REQUIREMENTS (RESET) ---
                     st.markdown("""
                     <div style="font-size: 0.8rem; color: gray; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #FF4B4B;">
                         <strong>Password Rules:</strong><br>
@@ -440,8 +436,6 @@ def login_page():
                                     if is_strong:
                                         reset_password(st.session_state.fp_username, new_pass)
                                         st.success("✅ Password Reset Successfully! Login now.")
-                                        
-                                        # CLOSE SECTION & RESET
                                         st.session_state.fp_step = 1
                                         st.session_state.fp_otp = None
                                         st.session_state.fp_username = None
@@ -465,7 +459,6 @@ def login_page():
             s_email = st.text_input("Enter Email", key="s_email")
             s_pass = st.text_input("Choose Password", type="password", key="s_pass")
             
-            # --- PASSWORD REQUIREMENTS (SIGNUP) ---
             st.markdown("""
             <div style="font-size: 0.8rem; color: gray; background: rgba(0,0,0,0.05); padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #FF4B4B;">
                 <strong>Password Rules:</strong><br>
@@ -479,7 +472,6 @@ def login_page():
                 if s_user and s_pass and s_email:
                     success, msg = register_user(s_user, s_email, s_pass)
                     if success:
-                        # AUTO LOGIN
                         st.session_state.logged_in = True
                         st.session_state.username = s_user
                         st.session_state.user_info = {
@@ -544,7 +536,7 @@ def main_app():
             
         st.divider()
         
-        export_string = f"History Export (G4 SOLUTION)\n\nMovie Searched: {selected_movie}\nDate: {date}\n\nRecommendations:\n{display_text}"
+        export_string = f"History Export (Group 4)\n\nMovie Searched: {selected_movie}\nDate: {date}\n\nRecommendations:\n{display_text}"
         
         st.download_button(
             label="💾 Download Record",
@@ -570,7 +562,7 @@ def main_app():
                         padding: 10px; border: 2px solid #FF4B4B; border-radius: 15px;
                         background: rgba(255, 75, 75, 0.1); backdrop-filter: blur(5px);
                         margin-bottom: 20px; color: black;">
-                G4 SOLUTION
+                GROUP 4
             </div>
         """, unsafe_allow_html=True)
 
@@ -692,7 +684,7 @@ def main_app():
             height: 60px;
         }}
         header[data-testid="stHeader"]::after {{
-            content: 'AI MOVIE RECOMMENDER';
+            content: 'G4 SOLUTION';
             color: white;
             font-size: 20px;
             font-weight: 900;
@@ -704,7 +696,26 @@ def main_app():
             pointer-events: none;
         }}
 
-        /* 2. MINIMIZED IMAGE WITH SHADOW */
+        /* 2. FIX: CENTER EYE ICON & ALL SIDEBAR BUTTONS */
+        /* This targets all buttons inside the sidebar, ensuring proper centering */
+        [data-testid="stSidebar"] button div[data-testid="stButton"] {{
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+        }}
+        [data-testid="stSidebar"] button {{
+            text-align: center !important;
+            padding-right: 0 !important;
+            padding-left: 0 !important;
+        }}
+        /* Specifically force the paragraph inside the button to center */
+        [data-testid="stSidebar"] button p {{
+            width: 100%;
+            text-align: center !important;
+            margin: 0 auto !important;
+        }}
+
+        /* 3. MINIMIZED IMAGE WITH SHADOW */
         [data-testid="stImage"] img {{
             max-height: 200px;
             object-fit: cover;
@@ -716,7 +727,7 @@ def main_app():
             transform: scale(1.02);
         }}
 
-        /* 3. BUTTON ANIMATION ON HOVER */
+        /* 4. BUTTON ANIMATION ON HOVER */
         .stButton button, .stLinkButton a, div[data-testid="stDownloadButton"] button {{
             background-color: #f0f2f6 !important;
             color: #000000 !important;
@@ -745,20 +756,14 @@ def main_app():
         }}
 
         /* MODERN RADIO BUTTON - FIX EMPTY TILE & STYLE OPTIONS */
-        
-        /* Hide the Main Widget Label Container completely */
         div.row-widget.stRadio > label {{
             display: none !important;
         }}
-        
-        /* Style the radio group container */
         [data-testid="stSidebar"] .stRadio > div[role="radiogroup"] {{
             flex-direction: row;
             gap: 10px;
-            margin-top: -20px !important; /* Forces it up to cover any gap */
+            margin-top: -20px !important;
         }}
-        
-        /* Target the Option Labels (The visible tiles) */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] label {{
             background-color: #f0f2f6 !important;
             padding: 10px 15px !important;
@@ -773,8 +778,6 @@ def main_app():
             display: flex;
             justify-content: center;
         }}
-        
-        /* Selected State */
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] div[aria-checked="true"] + div label,
         [data-testid="stSidebar"] .stRadio div[role="radiogroup"] div[aria-checked="true"] label {{
             background-color: #FF4B4B !important;
@@ -882,8 +885,6 @@ def main_app():
             # 2. FETCH DETAILS
             result = []
             for title in recommended_titles:
-                
-                # CONTENT-BASED: Show Overview
                 if method == 'Content-Based Filtering':
                     row = find_movie_row(movies_df, title)
                     if row is not None:
@@ -891,13 +892,9 @@ def main_app():
                         if pd.isna(movie_info): movie_info = "No overview available."
                     else:
                         movie_info = "No overview available."
-                
-                # COLLABORATIVE: Hide Overview
                 else:
                     movie_info = "" 
 
-                # GENRE: Removed completely from Cards
-                
                 result.append({
                     'title': title,
                     'info': movie_info
@@ -915,7 +912,7 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    # UPDATED HEADER WITH CONSTANT ANIMATION CLASS
+    # HEADER WITH ANIMATION
     st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
@@ -951,8 +948,6 @@ def main_app():
         
         for i, movie in enumerate(st.session_state.recommendations):
             with cols[i]:
-                # Render Card based on available info
-                # Collaborative has empty info, so we can hide that div or leave it empty
                 overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
                 
                 st.markdown(f"""
