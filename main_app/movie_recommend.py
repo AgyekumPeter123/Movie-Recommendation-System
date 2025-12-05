@@ -328,7 +328,7 @@ def login_page():
                 "GROUP 4 CINEMA",
                 "YOUR BEST AI MOVIE RECOMMENDER",
                 "BY G4 SOLUTION",
-                "PROUDLY FROM THRIVE AFRICA"
+                "PROUDLY EMERGED FROM THRIVE AFRICA"
             ];
 
             let i = 0;
