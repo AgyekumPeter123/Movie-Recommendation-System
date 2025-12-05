@@ -3,6 +3,7 @@ import pickle
 import gzip
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components  # <--- IMPORT ADDED
 import json
 import hashlib
 import uuid
@@ -185,7 +186,7 @@ external_links = {
 
 # --- LOGIN / SIGNUP PAGE ---
 def login_page():
-    # === ANIMATION INJECTION START ===
+    # === ANIMATION INJECTION START (BACKGROUND ONLY) ===
     st.markdown("""
     <style>
         /* Container for the background animation (G4 SOLUTION) */
@@ -238,72 +239,6 @@ def login_page():
             100% { transform: translateX(100vw); opacity: 0; }
         }
         
-        /* === TYPEWRITER ANIMATION FOR HEADER === */
-        .typewriter-container {
-            font-family: 'Courier New', Courier, monospace;
-            color: #FF4B4B;
-            font-weight: 900;
-            font-size: 1.5rem;
-            min-height: 80px; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        /* The cursor and animation container */
-        .typewriter-text::after {
-            content: "";
-            /* 16s Total Duration for 4 phrases (4s per phrase) */
-            animation: 
-                typingCycle 16s steps(40, end) infinite,
-                blinkCursor 0.6s step-end infinite;
-            border-right: 3px solid #FF4B4B;
-            white-space: nowrap;
-            overflow: hidden;
-            display: inline-block;
-            vertical-align: bottom;
-            width: 0;
-        }
-
-        @keyframes blinkCursor {
-            from, to { border-color: transparent; }
-            50% { border-color: #FF4B4B; }
-        }
-
-        /* CYCLE LOGIC (100% / 4 Phrases = 25% per phrase)
-           For each 25% block:
-           - Start (0% of block): Width 0
-           - Type (0-40% of block): Width 0 -> 100%
-           - Wait (40-90% of block): Width 100%
-           - Delete (90-100% of block): Width 100% -> 0
-        */
-        @keyframes typingCycle {
-            /* --- PHRASE 1: GROUP 4 CINEMA --- */
-            0%   { content: "GROUP 4 CINEMA"; width: 0; }
-            5%   { width: 100%; } /* Type */
-            20%  { width: 100%; } /* Wait */
-            25%  { width: 0;    } /* Delete */
-
-            /* --- PHRASE 2: YOUR BEST AI MOVIE RECOMMENDER --- */
-            25.1% { content: "YOUR BEST AI MOVIE RECOMMENDER"; width: 0; }
-            30%   { width: 100%; } /* Type */
-            45%   { width: 100%; } /* Wait */
-            50%   { width: 0;    } /* Delete */
-
-            /* --- PHRASE 3: BY G4 SOLUTION --- */
-            50.1% { content: "BY G4 SOLUTION"; width: 0; }
-            55%   { width: 100%; } /* Type */
-            70%   { width: 100%; } /* Wait */
-            75%   { width: 0;    } /* Delete */
-
-            /* --- PHRASE 4: PROUDLY FROM THRIVE AFRICA --- */
-            75.1% { content: "PROUDLY FROM THRIVE AFRICA"; width: 0; }
-            80%   { width: 100%; } /* Type */
-            95%   { width: 100%; } /* Wait */
-            100%  { width: 0;    } /* Delete */
-        }
-
         /* Ensure the login card sits ON TOP of the animation */
         div[data-testid="stVerticalBlock"] > div {
             z-index: 2; 
@@ -321,14 +256,116 @@ def login_page():
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        st.markdown("""
-        <div style="background-color: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px); padding: 20px; border-radius: 20px; border: 1px solid rgba(255, 75, 75, 0.2); text-align: center; margin-bottom: 20px;">
-            <div class="typewriter-container">
-                <span class="typewriter-text"></span>
+        # === 🎯 REPLACEMENT: JAVASCRIPT TYPEWRITER COMPONENT ===
+        # This replaces the broken CSS typewriter and ensures smooth typing logic.
+        
+        typewriter_html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {
+                    background-color: transparent;
+                    margin: 0;
+                    padding: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-family: 'Source Sans Pro', sans-serif;
+                }
+                .glass-card {
+                    background-color: rgba(255, 255, 255, 0.05);
+                    backdrop-filter: blur(5px);
+                    padding: 20px;
+                    border-radius: 20px;
+                    border: 1px solid rgba(255, 75, 75, 0.2);
+                    text-align: center;
+                    width: 90%;
+                    max-width: 600px;
+                    box-sizing: border-box;
+                }
+                .typewriter-container {
+                    font-family: 'Courier New', monospace;
+                    font-size: 1.5rem;
+                    font-weight: 900;
+                    color: #FF4B4B;
+                    text-align: center;
+                    min-height: 40px;
+                }
+                .cursor {
+                    display: inline-block;
+                    width: 3px;
+                    background: #FF4B4B;
+                    margin-left: 3px;
+                    animation: blink 0.6s infinite;
+                }
+                .subtitle {
+                    margin: 0;
+                    margin-top: 10px;
+                    opacity: 0.7;
+                    color: white; /* Default for dark mode */
+                    font-size: 0.9rem;
+                }
+                @media (prefers-color-scheme: light) {
+                    .subtitle { color: black; }
+                }
+                @keyframes blink {
+                    0%, 50% { opacity: 1; }
+                    51%, 100% { opacity: 0; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="glass-card">
+                <div class="typewriter-container">
+                    <span id="typewriter"></span><span class="cursor">&nbsp;</span>
+                </div>
+                <p class="subtitle">Login to access your personalized AI recommendations</p>
             </div>
-            <p style='margin:0; opacity: 0.7;'>Login to access your personalized AI recommendations</p>
-        </div>
-        """, unsafe_allow_html=True)
+
+            <script>
+            const phrases = [
+                "GROUP 4 CINEMA",
+                "YOUR BEST AI MOVIE RECOMMENDER",
+                "BY G4 SOLUTION",
+                "PROUDLY FROM THRIVE AFRICA"
+            ];
+
+            let i = 0;
+            let j = 0;
+            let deleting = false;
+            let speed = 80;
+            let deleteSpeed = 40;
+            let pause = 1500;
+
+            function typeEffect() {
+                const textElement = document.getElementById("typewriter");
+                
+                if (!textElement) return;
+
+                if (!deleting) {
+                    textElement.textContent = phrases[i].substring(0, j++);
+                    if (j > phrases[i].length) {
+                        deleting = true;
+                        setTimeout(typeEffect, pause);
+                        return;
+                    }
+                } else {
+                    textElement.textContent = phrases[i].substring(0, j--);
+                    if (j < 0) {
+                        deleting = false;
+                        i = (i + 1) % phrases.length;
+                    }
+                }
+                setTimeout(typeEffect, deleting ? deleteSpeed : speed);
+            }
+            typeEffect();
+            </script>
+        </body>
+        </html>
+        """
+        # Render the component
+        components.html(typewriter_html, height=130, scrolling=False)
         
         tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
 
