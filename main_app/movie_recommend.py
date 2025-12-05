@@ -240,26 +240,31 @@ def login_page():
         
         /* === TYPEWRITER ANIMATION FOR HEADER === */
         .typewriter-container {
-            font-family: 'Courier New', Courier, monospace; /* Monospace looks best for typing */
+            font-family: 'Courier New', Courier, monospace;
             color: #FF4B4B;
             font-weight: 900;
-            font-size: 1.5rem; /* Adjusted size to fit long text */
-            min-height: 60px;
+            font-size: 1.5rem;
+            min-height: 80px; /* Space for wrapping if needed */
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 10px;
         }
 
+        /* The cursor and animation container */
         .typewriter-text::after {
             content: "|";
+            /* steps(35) gives the mechanical character-by-character look. 
+               16s total duration for 4 phrases = 4s per phrase 
+            */
             animation: 
-                typingCycle 16s steps(1, end) infinite,
+                typingCycle 16s steps(35, end) infinite,
                 blinkCursor 0.5s step-end infinite;
-            border-right: 3px solid #FF4B4B; /* The Cursor */
+            border-right: 3px solid #FF4B4B;
             white-space: nowrap;
             overflow: hidden;
             display: inline-block;
+            vertical-align: bottom;
             width: 0;
         }
 
@@ -268,31 +273,35 @@ def login_page():
             50% { border-color: #FF4B4B; }
         }
 
-        /* Complex animation to handle content switching and width typing */
+        /* Logic:
+           0 -> 10%: Type (width 0 to 100%)
+           10% -> 20%: Read (width stays 100%)
+           20% -> 25%: Delete (width 100% to 0%)
+        */
         @keyframes typingCycle {
             /* 1. GROUP 4 CINEMA */
-            0% { content: "GROUP 4 CINEMA"; width: 0; }
-            5% { width: 100%; } /* Type in */
-            20% { width: 100%; } /* Hold */
-            25% { width: 0; }   /* Delete */
+            0%    { content: "GROUP 4 CINEMA"; width: 0; }
+            10%   { width: 100%; }
+            20%   { width: 100%; }
+            25%   { width: 0; }
 
             /* 2. YOUR BEST AI MOVIE RECOMMENDER */
             25.1% { content: "YOUR BEST AI MOVIE RECOMMENDER"; width: 0; }
-            30% { width: 100%; }
-            45% { width: 100%; }
-            50% { width: 0; }
+            35%   { width: 100%; }
+            45%   { width: 100%; }
+            50%   { width: 0; }
 
             /* 3. BY G4 SOLUTION */
             50.1% { content: "BY G4 SOLUTION"; width: 0; }
-            55% { width: 100%; }
-            70% { width: 100%; }
-            75% { width: 0; }
+            60%   { width: 100%; }
+            70%   { width: 100%; }
+            75%   { width: 0; }
 
             /* 4. PROUDLY FROM THRIVE AFRICA */
             75.1% { content: "PROUDLY FROM THRIVE AFRICA"; width: 0; }
-            80% { width: 100%; }
-            95% { width: 100%; }
-            100% { width: 0; }
+            85%   { width: 100%; }
+            95%   { width: 100%; }
+            100%  { width: 0; }
         }
 
         /* Ensure the login card sits ON TOP of the animation */
@@ -312,7 +321,6 @@ def login_page():
     col1, col2, col3 = st.columns([1, 2, 1])
     
     with col2:
-        # Added a slight backdrop blur to the card so text doesn't clash
         # Replaced the static H1 with the Typewriter DIV
         st.markdown("""
         <div style="background-color: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px); padding: 20px; border-radius: 20px; border: 1px solid rgba(255, 75, 75, 0.2); text-align: center; margin-bottom: 20px;">
