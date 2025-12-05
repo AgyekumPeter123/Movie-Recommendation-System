@@ -692,7 +692,7 @@ def main_app():
             height: 60px;
         }}
         header[data-testid="stHeader"]::after {{
-            content: 'MOVIE RECOMMENDER';
+            content: 'AI MOVIE RECOMMENDER';
             color: white;
             font-size: 20px;
             font-weight: 900;
