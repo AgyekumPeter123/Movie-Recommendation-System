@@ -17,7 +17,7 @@ from datetime import datetime
 
 # --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="Group 4 - Movie Recommender",
+    page_title="G4 SOLUTION - Movie Recommender",
     layout="wide",
     page_icon="🎥"
 )
@@ -692,7 +692,7 @@ def main_app():
             height: 60px;
         }}
         header[data-testid="stHeader"]::after {{
-            content: 'G4 SOLUTION';
+            content: 'MOVIE RECOMMENDER';
             color: white;
             font-size: 20px;
             font-weight: 900;
