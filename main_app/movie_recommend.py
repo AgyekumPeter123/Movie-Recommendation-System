@@ -188,7 +188,7 @@ def login_page():
     # === ANIMATION INJECTION START ===
     st.markdown("""
     <style>
-        /* Container for the background animation */
+        /* Container for the background animation (G4 SOLUTION) */
         .animation-wrapper {
             position: fixed;
             top: 0;
@@ -222,7 +222,6 @@ def login_page():
             animation: moveFromRight 6s ease-in-out infinite;
         }
 
-        /* Animation logic for G4 */
         @keyframes moveFromLeft {
             0% { transform: translateX(-100vw); opacity: 0; }
             30% { transform: translateX(0); opacity: 1; }
@@ -231,7 +230,6 @@ def login_page():
             100% { transform: translateX(-100vw); opacity: 0; }
         }
 
-        /* Animation logic for SOLUTION */
         @keyframes moveFromRight {
             0% { transform: translateX(100vw); opacity: 0; }
             30% { transform: translateX(0); opacity: 1; }
@@ -240,6 +238,63 @@ def login_page():
             100% { transform: translateX(100vw); opacity: 0; }
         }
         
+        /* === TYPEWRITER ANIMATION FOR HEADER === */
+        .typewriter-container {
+            font-family: 'Courier New', Courier, monospace; /* Monospace looks best for typing */
+            color: #FF4B4B;
+            font-weight: 900;
+            font-size: 1.5rem; /* Adjusted size to fit long text */
+            min-height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .typewriter-text::after {
+            content: "|";
+            animation: 
+                typingCycle 16s steps(1, end) infinite,
+                blinkCursor 0.5s step-end infinite;
+            border-right: 3px solid #FF4B4B; /* The Cursor */
+            white-space: nowrap;
+            overflow: hidden;
+            display: inline-block;
+            width: 0;
+        }
+
+        @keyframes blinkCursor {
+            from, to { border-color: transparent; }
+            50% { border-color: #FF4B4B; }
+        }
+
+        /* Complex animation to handle content switching and width typing */
+        @keyframes typingCycle {
+            /* 1. GROUP 4 CINEMA */
+            0% { content: "GROUP 4 CINEMA"; width: 0; }
+            5% { width: 100%; } /* Type in */
+            20% { width: 100%; } /* Hold */
+            25% { width: 0; }   /* Delete */
+
+            /* 2. YOUR BEST AI MOVIE RECOMMENDER */
+            25.1% { content: "YOUR BEST AI MOVIE RECOMMENDER"; width: 0; }
+            30% { width: 100%; }
+            45% { width: 100%; }
+            50% { width: 0; }
+
+            /* 3. BY G4 SOLUTION */
+            50.1% { content: "BY G4 SOLUTION"; width: 0; }
+            55% { width: 100%; }
+            70% { width: 100%; }
+            75% { width: 0; }
+
+            /* 4. PROUDLY FROM THRIVE AFRICA */
+            75.1% { content: "PROUDLY FROM THRIVE AFRICA"; width: 0; }
+            80% { width: 100%; }
+            95% { width: 100%; }
+            100% { width: 0; }
+        }
+
         /* Ensure the login card sits ON TOP of the animation */
         div[data-testid="stVerticalBlock"] > div {
             z-index: 2; 
@@ -258,9 +313,12 @@ def login_page():
     
     with col2:
         # Added a slight backdrop blur to the card so text doesn't clash
+        # Replaced the static H1 with the Typewriter DIV
         st.markdown("""
         <div style="background-color: rgba(255, 255, 255, 0.05); backdrop-filter: blur(5px); padding: 20px; border-radius: 20px; border: 1px solid rgba(255, 75, 75, 0.2); text-align: center; margin-bottom: 20px;">
-            <h1 style='color: #FF4B4B; margin:0;'>🍿 Group 4 Cinema</h1>
+            <div class="typewriter-container">
+                <span class="typewriter-text"></span>
+            </div>
             <p style='margin:0; opacity: 0.7;'>Login to access your personalized AI recommendations</p>
         </div>
         """, unsafe_allow_html=True)
