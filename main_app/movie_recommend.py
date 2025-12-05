@@ -17,7 +17,7 @@ from datetime import datetime
 
 # --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="Group 4 - Movie Recommender",
+    page_title="G4 SOLUTION - Movie Recommender",
     layout="wide",
     page_icon="🎥"
 )
@@ -65,12 +65,12 @@ def send_otp_email(receiver_email, otp):
         msg = MIMEMultipart()
         msg['From'] = SENDER_EMAIL
         msg['To'] = receiver_email
-        msg['Subject'] = "🔐 Group 4: Password Reset OTP"
+        msg['Subject'] = "🔐 G4 SOLUTION: Password Reset OTP"
 
         body = f"""
         <html>
           <body style="font-family: Arial, sans-serif;">
-            <h2 style="color: #FF4B4B;">Group 4 Movie Recommender</h2>
+            <h2 style="color: #FF4B4B;">G4 Solution Movie Recommender</h2>
             <p>You requested a password reset.</p>
             <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; display: inline-block;">
                 <span style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">{otp}</span>
@@ -323,7 +323,7 @@ def login_page():
 
             <script>
             const phrases = [
-                "GROUP 4 CINEMA",
+                "G4 SOLUTION CINEMA",
                 "YOUR BEST AI MOVIE RECOMMENDER",
                 "BY G4 SOLUTION",
                 "PROUDLY FROM THRIVE AFRICA"
@@ -536,7 +536,7 @@ def main_app():
             
         st.divider()
         
-        export_string = f"History Export (Group 4)\n\nMovie Searched: {selected_movie}\nDate: {date}\n\nRecommendations:\n{display_text}"
+        export_string = f"History Export (G4 SOLUTION)\n\nMovie Searched: {selected_movie}\nDate: {date}\n\nRecommendations:\n{display_text}"
         
         st.download_button(
             label="💾 Download Record",
@@ -562,7 +562,7 @@ def main_app():
                         padding: 10px; border: 2px solid #FF4B4B; border-radius: 15px;
                         background: rgba(255, 75, 75, 0.1); backdrop-filter: blur(5px);
                         margin-bottom: 20px; color: black;">
-                GROUP 4
+                G4 SOLUTION
             </div>
         """, unsafe_allow_html=True)
 
@@ -630,7 +630,7 @@ def main_app():
             for member in team:
                 st.write(member)
 
-        with st.expander("ℹ️ About"):
+        with st.expander("ℹ️ Details"):
             st.write("**Group 4 Final Project**")
             st.write("Course: **Machine Learning & AI**")
             st.write("Provider: **Thrive Africa**")
@@ -962,7 +962,7 @@ def main_app():
         col_export, col_watch = st.columns([1, 2])
         
         with col_export:
-            export_text = f"Group 4 Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
+            export_text = f"G4 SOLUTION Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
             for i, m in enumerate(st.session_state.recommendations, 1):
                 export_text += f"{i}. {m['title']}\n"
                 if m['info']: export_text += f"   {m['info']}\n"
