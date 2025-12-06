@@ -630,8 +630,10 @@ def main_app():
                     if results:
                         video_id = results[0]['id']
                         video_url = f"https://www.youtube.com/watch?v={video_id}"
-                        # Embed the video player!
-                        st.video(video_url)
+                        
+                        # --- FIX: ADDED UNIQUE KEY TO PREVENT GHOSTING ---
+                        st.video(video_url, key=f"video_{movie['title']}_{video_id}")
+                        
                         found_trailer = True
                 except Exception as e:
                     st.warning("Could not load trailer automatically.")
@@ -1069,6 +1071,44 @@ def main_app():
             export_text += "\n"
         
         st.download_button("📄 Export Results List", data=export_text, file_name="g4_recs.txt", use_container_width=True)
+
+    # --- 🦶 NEW MODERN FOOTER ---
+    st.markdown("""
+        <style>
+        .g4-footer {
+            margin-top: 80px;
+            padding: 30px;
+            border-top: 1px solid rgba(255, 75, 75, 0.2);
+            background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
+            text-align: center;
+            color: #888;
+        }
+        .g4-footer strong {
+            color: #FF4B4B;
+        }
+        .g4-footer a {
+            color: inherit;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s;
+        }
+        .g4-footer a:hover {
+            color: #FF4B4B;
+        }
+        </style>
+        
+        <div class="g4-footer">
+            <p>🚀 Powered by <strong>G4 SOLUTION</strong> | 🎓 Thrive Africa Class of '24</p>
+            <p style="font-size: 0.8rem; margin-top: 10px;">
+                <a href="#">Privacy Policy</a> • 
+                <a href="#">Terms of Use</a> • 
+                <a href="#">Contact Support</a>
+            </p>
+            <p style="font-size: 0.7rem; margin-top: 10px; opacity: 0.6;">
+                &copy; 2025 All Rights Reserved. Built with ❤️ and Streamlit.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
 
 # --- CONTROL FLOW ---
 if not st.session_state.logged_in:
