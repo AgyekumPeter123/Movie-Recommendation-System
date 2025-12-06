@@ -407,7 +407,7 @@ def login_page():
             l_user = st.text_input("Username", key="l_user")
             l_pass = st.text_input("Password", type="password", key="l_pass")
             
-            if st.button("🚀 Enter App", type="primary", use_container_width=True):
+            if st.button("🚀 Get Access", type="primary", use_container_width=True):
                 if l_user and l_pass:
                     is_valid, user_data = authenticate_user(l_user, l_pass)
                     if is_valid:
