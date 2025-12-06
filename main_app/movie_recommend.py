@@ -244,6 +244,18 @@ def login_page():
             z-index: 2; 
             position: relative;
         }
+
+        /* === 🔮 GLASSMORPHISM FOR LOGIN FORM (Middle Column) === */
+        div[data-testid="column"]:nth-of-type(2) {
+            background: rgba(255, 255, 255, 0.05); /* Very transparent for glass effect */
+            backdrop-filter: blur(15px); /* This blurs the animation behind it */
+            -webkit-backdrop-filter: blur(15px); /* Safari support */
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
     </style>
 
     <div class="animation-wrapper">
@@ -257,6 +269,7 @@ def login_page():
     
     with col2:
         # === TYPEWRITER COMPONENT ===
+        # Updated to remove internal glass styling so it blends with the parent column
         typewriter_html = """
         <!DOCTYPE html>
         <html>
@@ -272,13 +285,13 @@ def login_page():
                     font-family: 'Source Sans Pro', sans-serif;
                 }
                 .glass-card {
-                    background-color: rgba(255, 255, 255, 0.05);
-                    backdrop-filter: blur(5px);
-                    padding: 20px;
+                    /* Made transparent to let the parent column glass effect shine through */
+                    background-color: transparent; 
+                    padding: 10px;
                     border-radius: 20px;
-                    border: 1px solid rgba(255, 75, 75, 0.2);
+                    border: none;
                     text-align: center;
-                    width: 90%;
+                    width: 100%;
                     max-width: 600px;
                     box-sizing: border-box;
                 }
@@ -697,7 +710,6 @@ def main_app():
         }}
 
         /* 2. FIX: CENTER EYE ICON & ALL SIDEBAR BUTTONS */
-        /* This targets all buttons inside the sidebar, ensuring proper centering */
         [data-testid="stSidebar"] button div[data-testid="stButton"] {{
             display: flex !important;
             justify-content: center !important;
@@ -708,7 +720,6 @@ def main_app():
             padding-right: 0 !important;
             padding-left: 0 !important;
         }}
-        /* Specifically force the paragraph inside the button to center */
         [data-testid="stSidebar"] button p {{
             width: 100%;
             text-align: center !important;
@@ -755,7 +766,7 @@ def main_app():
             color: #000000 !important;
         }}
 
-        /* MODERN RADIO BUTTON - FIX EMPTY TILE & STYLE OPTIONS */
+        /* MODERN RADIO BUTTON */
         div.row-widget.stRadio > label {{
             display: none !important;
         }}
@@ -785,51 +796,71 @@ def main_app():
             border-color: #FF4B4B !important;
         }}
 
-        /* CARD STYLING */
+        /* --- NEW PRO CARD STYLING --- */
         .rec-card {{
-            background: {card_bg};
-            backdrop-filter: blur(10px);
-            border: 1px solid {card_border};
-            padding: 20px;
+            background-color: #2b2b2b; /* Fallback */
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            border-top: 5px solid #FF4B4B; 
-            color: {text_color};
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             height: 350px; 
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }}
+        /* Gradient Overlay for Text Readability */
+        .rec-card::before {{
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.9) 100%);
+            z-index: 1;
         }}
         .rec-card:hover {{
             transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(255, 75, 75, 0.25);
+            box-shadow: 0 15px 30px rgba(255, 75, 75, 0.4);
             border-color: #FF4B4B;
         }}
-
-        .movie-title {{
-            font-size: 1.1rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            color: {text_color};
-            min-height: 50px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .card-content {{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            padding: 20px;
+            z-index: 2;
+            width: 100%;
         }}
-
+        .movie-title {{
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 2px 4px black;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }}
+        .meta-row {{
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            color: #ddd;
+        }}
+        .meta-tag {{
+            background: rgba(255, 75, 75, 0.8);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }}
         .movie-overview {{
-            font-size: 0.85rem;
-            opacity: 0.8;
+            font-size: 0.8rem;
+            color: #ccc;
             display: -webkit-box;
-            -webkit-line-clamp: 10; 
+            -webkit-line-clamp: 3; 
             -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            line-height: 1.5;
-            color: {text_color};
+            margin-top: 5px;
+            text-shadow: 0 1px 2px black;
         }}
 
         /* INPUT LABELS */
@@ -882,22 +913,45 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(collab_titles[i[0]])
 
-            # 2. FETCH DETAILS
+            # 2. FETCH DETAILS (UPDATED FOR IMAGES & META)
             result = []
             for title in recommended_titles:
-                if method == 'Content-Based Filtering':
-                    row = find_movie_row(movies_df, title)
-                    if row is not None:
-                        movie_info = row.get("overview", "No overview available.")
-                        if pd.isna(movie_info): movie_info = "No overview available."
-                    else:
-                        movie_info = "No overview available."
-                else:
-                    movie_info = "" 
+                row = find_movie_row(movies_df, title)
+                
+                # Defaults
+                overview = ""
+                bg_image = ""
+                country = "N/A"
+                lang = "EN"
+
+                if row is not None:
+                    # Overview
+                    if method == 'Content-Based Filtering':
+                        overview = row.get("overview", "")
+                        if pd.isna(overview): overview = ""
+                    
+                    # 1. Image (Backdrop)
+                    backdrop = row.get("backdrop_path")
+                    if backdrop and not pd.isna(backdrop):
+                        bg_image = f"https://image.tmdb.org/t/p/w500{backdrop}"
+                    
+                    # 2. Country (Safe Extract)
+                    c_raw = row.get("production_countries")
+                    if c_raw and not pd.isna(c_raw):
+                        # Simple string split to get the name safely
+                        country = str(c_raw).split(',')[-1].strip(" []'")[:20]
+                    
+                    # 3. Language (Safe Extract)
+                    l_raw = row.get("spoken_languages")
+                    if l_raw and not pd.isna(l_raw):
+                         lang = str(l_raw).split(',')[-1].strip(" []'")[:2].upper()
 
                 result.append({
                     'title': title,
-                    'info': movie_info
+                    'info': overview,
+                    'image': bg_image,
+                    'country': country,
+                    'lang': lang
                 })
 
             return result
@@ -948,12 +1002,23 @@ def main_app():
         
         for i, movie in enumerate(st.session_state.recommendations):
             with cols[i]:
+                # Prepare CSS for background image if it exists
+                bg_style = f"background-image: url('{movie['image']}');" if movie['image'] else "background: linear-gradient(135deg, #1e1e1e, #2a2a2a);"
+                
+                # Show overview only if it exists
                 overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
                 
+                # Render New Card HTML
                 st.markdown(f"""
-                <div class="rec-card">
-                    <div class="movie-title">{movie['title']}</div>
-                    {overview_html}
+                <div class="rec-card" style="{bg_style}">
+                    <div class="card-content">
+                        <div class="meta-row">
+                            <span class="meta-tag">{movie['lang']}</span>
+                            <span>{movie['country']}</span>
+                        </div>
+                        <div class="movie-title">{movie['title']}</div>
+                        {overview_html}
+                    </div>
                 </div>
                 """, unsafe_allow_html=True)
 
