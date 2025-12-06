@@ -186,10 +186,10 @@ external_links = {
 
 # --- LOGIN / SIGNUP PAGE ---
 def login_page():
-    # === ANIMATION INJECTION START (BACKGROUND ONLY) ===
+    # === ANIMATION INJECTION START ===
     st.markdown("""
     <style>
-        /* Container for the background animation (G4 SOLUTION) */
+        /* Container for the background animation */
         .animation-wrapper {
             position: fixed;
             top: 0;
@@ -200,27 +200,30 @@ def login_page():
             justify-content: center;
             align-items: center;
             z-index: 0; /* Behind the form */
-            pointer-events: none; /* Let clicks pass through */
+            pointer-events: none;
             overflow: hidden;
         }
 
+        /* UPDATED: 
+           1. Increased font brightness for visibility (rgba(255, 255, 255, 0.4))
+           2. Slowed down animation to 12s
+        */
         .anim-text {
             font-size: 8rem; 
             font-weight: 900;
-            color: rgba(255, 128, 128, 0.15); /* Subtle Grey transparent */
+            color: rgba(255, 255, 255, 0.4); /* Much brighter so it shows through glass */
+            text-shadow: 0 0 20px rgba(255, 75, 75, 0.5); /* Red Glow */
             text-transform: uppercase;
             white-space: nowrap;
         }
 
-        /* Specifics for G4 */
         .g4-part {
-            animation: moveFromLeft 6s ease-in-out infinite;
+            animation: moveFromLeft 12s ease-in-out infinite; /* Slowed to 12s */
             margin-right: 20px; 
         }
 
-        /* Specifics for SOLUTION */
         .solution-part {
-            animation: moveFromRight 6s ease-in-out infinite;
+            animation: moveFromRight 12s ease-in-out infinite; /* Slowed to 12s */
         }
 
         @keyframes moveFromLeft {
@@ -239,14 +242,12 @@ def login_page():
             100% { transform: translateX(100vw); opacity: 0; }
         }
         
-        /* Ensure the login card sits ON TOP of the animation */
         div[data-testid="stVerticalBlock"] > div {
             z-index: 2; 
             position: relative;
         }
 
         /* === 🔥 FIXED GLASSMORPHISM (UPDATED SELECTOR) === */
-        /* Targets the 2nd column in the horizontal layout (the middle one) */
         div[data-testid="stHorizontalBlock"] > div:nth-child(2),
         div[data-testid="column"] > div:nth-child(2) {
             background: rgba(255, 255, 255, 0.08);
@@ -264,7 +265,6 @@ def login_page():
             animation: neon-pulse 4s ease-in-out infinite alternate;
         }
 
-        /* Pulsing Animation for the Neon Glow */
         @keyframes neon-pulse {
             0% {
                 box-shadow: 
@@ -310,7 +310,6 @@ def login_page():
                     font-family: 'Source Sans Pro', sans-serif;
                 }
                 .glass-card {
-                    /* Made transparent to let the parent column glass effect shine through */
                     background-color: transparent; 
                     padding: 10px;
                     border-radius: 20px;
@@ -325,7 +324,7 @@ def login_page():
                     font-size: 1.5rem;
                     font-weight: 900;
                     color: #FF4B4B;
-                    text-shadow: 0 0 5px rgba(255, 75, 75, 0.5); /* Text glow */
+                    text-shadow: 0 0 5px rgba(255, 75, 75, 0.5);
                     text-align: center;
                     min-height: 40px;
                 }
@@ -341,7 +340,7 @@ def login_page():
                     margin: 0;
                     margin-top: 10px;
                     opacity: 0.8;
-                    color: white; /* Default for dark mode */
+                    color: white;
                     font-size: 0.9rem;
                 }
                 @media (prefers-color-scheme: light) {
@@ -615,9 +614,9 @@ def main_app():
 
         st.divider()
 
-        # 3. Engine Selection (Blank Space Above)
+        # 3. Engine Selection
         filter_method = st.radio(
-            " ", # Internal label set to space to remove "Select"
+            " ", 
             ('Content-Based Filtering', 'Collaborative Filtering'),
             label_visibility="collapsed"
         )
@@ -702,15 +701,11 @@ def main_app():
         text_color = "#ffffff"
         label_color = "#FF4B4B"
         input_label_color = "#ffffff"
-        card_bg = "rgba(255, 255, 255, 0.05)"
-        card_border = "rgba(255, 255, 255, 0.1)"
     else:
         main_bg = "#ffffff"
         text_color = "#000000"
         label_color = "#FF4B4B"
         input_label_color = "#8B0000"
-        card_bg = "rgba(0, 0, 0, 0.02)"
-        card_border = "rgba(0, 0, 0, 0.05)"
 
     # --- CSS INJECTION ---
     st.markdown(f"""
@@ -823,71 +818,49 @@ def main_app():
             border-color: #FF4B4B !important;
         }}
 
-        /* --- NEW PRO CARD STYLING --- */
+        /* --- NEW PRO CARD STYLING (TEXT ONLY) --- */
         .rec-card {{
-            background-color: #2b2b2b; /* Fallback */
-            background-size: cover;
-            background-position: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* Replaced image background with professional gradient */
+            background: linear-gradient(135deg, #2b2b2b, #1a1a1a);
+            border: 1px solid rgba(255, 75, 75, 0.2);
             border-radius: 15px;
             height: 350px; 
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
         }}
-        /* Gradient Overlay for Text Readability */
-        .rec-card::before {{
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.9) 100%);
-            z-index: 1;
-        }}
+        
         .rec-card:hover {{
             transform: translateY(-8px);
             box-shadow: 0 15px 30px rgba(255, 75, 75, 0.4);
             border-color: #FF4B4B;
         }}
         .card-content {{
-            position: absolute;
-            bottom: 0;
-            left: 0;
             padding: 20px;
             z-index: 2;
             width: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
         }}
         .movie-title {{
             font-size: 1.2rem;
             font-weight: 900;
             color: white;
-            text-shadow: 0 2px 4px black;
-            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(255, 75, 75, 0.5);
+            margin-bottom: 10px;
             line-height: 1.2;
-        }}
-        .meta-row {{
-            display: flex;
-            gap: 10px;
-            margin-bottom: 8px;
-            font-size: 0.75rem;
-            color: #ddd;
-        }}
-        .meta-tag {{
-            background: rgba(255, 75, 75, 0.8);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            text-transform: uppercase;
         }}
         .movie-overview {{
             font-size: 0.8rem;
             color: #ccc;
             display: -webkit-box;
-            -webkit-line-clamp: 3; 
+            -webkit-line-clamp: 6; 
             -webkit-box-orient: vertical;
             overflow: hidden;
             margin-top: 5px;
-            text-shadow: 0 1px 2px black;
         }}
 
         /* INPUT LABELS */
@@ -940,45 +913,23 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(collab_titles[i[0]])
 
-            # 2. FETCH DETAILS (UPDATED FOR IMAGES & META)
+            # 2. FETCH DETAILS (UPDATED: REMOVED IMAGES & META)
             result = []
             for title in recommended_titles:
                 row = find_movie_row(movies_df, title)
                 
                 # Defaults
-                overview = ""
-                bg_image = ""
-                country = "N/A"
-                lang = "EN"
+                overview = "No details available."
 
                 if row is not None:
                     # Overview
                     if method == 'Content-Based Filtering':
                         overview = row.get("overview", "")
-                        if pd.isna(overview): overview = ""
-                    
-                    # 1. Image (Backdrop)
-                    backdrop = row.get("backdrop_path")
-                    if backdrop and not pd.isna(backdrop):
-                        bg_image = f"https://image.tmdb.org/t/p/w500{backdrop}"
-                    
-                    # 2. Country (Safe Extract)
-                    c_raw = row.get("production_countries")
-                    if c_raw and not pd.isna(c_raw):
-                        # Simple string split to get the name safely
-                        country = str(c_raw).split(',')[-1].strip(" []'")[:20]
-                    
-                    # 3. Language (Safe Extract)
-                    l_raw = row.get("spoken_languages")
-                    if l_raw and not pd.isna(l_raw):
-                         lang = str(l_raw).split(',')[-1].strip(" []'")[:2].upper()
+                        if pd.isna(overview): overview = "No details available."
 
                 result.append({
                     'title': title,
-                    'info': overview,
-                    'image': bg_image,
-                    'country': country,
-                    'lang': lang
+                    'info': overview
                 })
 
             return result
@@ -1029,20 +980,13 @@ def main_app():
         
         for i, movie in enumerate(st.session_state.recommendations):
             with cols[i]:
-                # Prepare CSS for background image if it exists
-                bg_style = f"background-image: url('{movie['image']}');" if movie['image'] else "background: linear-gradient(135deg, #1e1e1e, #2a2a2a);"
-                
                 # Show overview only if it exists
                 overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
                 
-                # Render New Card HTML
+                # Render New Card HTML (Text Only)
                 st.markdown(f"""
-                <div class="rec-card" style="{bg_style}">
+                <div class="rec-card">
                     <div class="card-content">
-                        <div class="meta-row">
-                            <span class="meta-tag">{movie['lang']}</span>
-                            <span>{movie['country']}</span>
-                        </div>
                         <div class="movie-title">{movie['title']}</div>
                         {overview_html}
                     </div>
