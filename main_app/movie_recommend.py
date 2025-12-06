@@ -16,6 +16,14 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
+# --- NEW IMPORT FOR TRAILER SEARCH ---
+# If this fails, run: pip install youtube-search
+try:
+    from youtube_search import YoutubeSearch
+except ImportError:
+    st.error("⚠️ Library missing. Please stop the app and run: pip install youtube-search")
+    YoutubeSearch = None
+
 # --- PAGE CONFIG ---
 st.set_page_config(
     page_title="G4 SOLUTION - Movie Recommender",
@@ -223,20 +231,18 @@ def login_page():
             animation: moveFromRight 15s linear infinite; /* 15s Slow Cycle */
         }
 
-        /* --- UPDATED LOGIC: Slow Entrance -> Instant Vanish at Center --- */
-        
         @keyframes moveFromLeft {
             0% { transform: translateX(-100vw); opacity: 0; }
-            10% { transform: translateX(-80vw); opacity: 1; }  /* Fade in quickly */
-            98% { transform: translateX(0); opacity: 1; }      /* Move SLOWLY to center */
-            100% { transform: translateX(0); opacity: 0; }     /* Vanish instantly */
+            10% { transform: translateX(-80vw); opacity: 1; }
+            98% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(0); opacity: 0; }
         }
 
         @keyframes moveFromRight {
             0% { transform: translateX(100vw); opacity: 0; }
-            10% { transform: translateX(80vw); opacity: 1; }   /* Fade in quickly */
-            98% { transform: translateX(0); opacity: 1; }      /* Move SLOWLY to center */
-            100% { transform: translateX(0); opacity: 0; }     /* Vanish instantly */
+            10% { transform: translateX(80vw); opacity: 1; }
+            98% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(0); opacity: 0; }
         }
         
         div[data-testid="stVerticalBlock"] > div {
@@ -528,7 +534,6 @@ def main_app():
     # === 🛡️ CSS RESET: PREVENT LOGIN STYLES FROM AFFECTING MAIN APP ===
     st.markdown("""
         <style>
-        /* Force reset of the glass effect on columns in the main app */
         div[data-testid="stHorizontalBlock"] > div:nth-child(2),
         div[data-testid="column"] > div:nth-child(2) {
             background: transparent !important;
@@ -598,7 +603,7 @@ def main_app():
             use_container_width=True
         )
 
-    # --- 🎬 MOVIE DETAILS DIALOG (THE NEW FEATURE) ---
+    # --- 🎬 MOVIE DETAILS DIALOG (EMBEDDED TRAILER) ---
     @st.dialog("📽️ Movie Details", width="large")
     def show_movie_details(movie):
         # 1. Header with Image and Title
@@ -608,23 +613,34 @@ def main_app():
         with col_txt:
             st.header(movie['title'])
             st.markdown("### Overview")
-            # Show full text without truncation
             st.write(movie['info'])
 
         st.divider()
         
-        # 2. Watch Trailer Button
+        # 2. EMBEDDED TRAILER LOGIC
         st.markdown("### 🍿 Watch Trailer")
-        # Construct YouTube Search Query
-        yt_query = urllib.parse.quote(f"{movie['title']} trailer")
-        yt_url = f"https://www.youtube.com/results?search_query={yt_query}"
         
-        st.link_button(
-            label="▶️ Watch Trailer on YouTube", 
-            url=yt_url, 
-            type="primary", 
-            use_container_width=True
-        )
+        # We try to find the trailer using the library
+        found_trailer = False
+        if YoutubeSearch:
+            with st.spinner(f"Searching YouTube for '{movie['title']}' trailer..."):
+                try:
+                    # Search for "Movie Title trailer" and get 1 result
+                    results = YoutubeSearch(f"{movie['title']} trailer", max_results=1).to_dict()
+                    if results:
+                        video_id = results[0]['id']
+                        video_url = f"https://www.youtube.com/watch?v={video_id}"
+                        # Embed the video player!
+                        st.video(video_url)
+                        found_trailer = True
+                except Exception as e:
+                    st.warning("Could not load trailer automatically.")
+        
+        # Fallback if library fails or no video found
+        if not found_trailer:
+            yt_query = urllib.parse.quote(f"{movie['title']} trailer")
+            yt_url = f"https://www.youtube.com/results?search_query={yt_query}"
+            st.link_button("▶️ Search on YouTube Instead", yt_url, use_container_width=True)
 
         st.divider()
 
@@ -633,10 +649,7 @@ def main_app():
         st.caption("Select a provider below to search for this movie:")
         
         link_cols = st.columns(2)
-        
-        # Loop through configured external links and create dynamic search URLs
         for idx, (site_name, base_url) in enumerate(external_links.items()):
-            # Safe URL encoding of the movie title
             safe_title = urllib.parse.quote(movie['title'])
             final_url = f"{base_url}{safe_title}"
             
@@ -682,7 +695,7 @@ def main_app():
 
         st.divider()
 
-        # 4. History with Mini Buttons
+        # 4. History
         h_col1, h_col2 = st.columns([3, 1])
         with h_col1:
             st.markdown("### 📜 History")
@@ -769,10 +782,8 @@ def main_app():
     # --- CSS INJECTION ---
     st.markdown(f"""
         <style>
-        /* MAIN APP COLORS */
         .stApp {{ background-color: {main_bg}; color: {text_color}; }}
         
-        /* 1. RESTORE RED APP BAR & G4 SOLUTION */
         header[data-testid="stHeader"] {{
             background-color: #FF4B4B !important;
             height: 60px;
@@ -790,7 +801,6 @@ def main_app():
             pointer-events: none;
         }}
 
-        /* 2. FIX: CENTER EYE ICON & ALL SIDEBAR BUTTONS */
         [data-testid="stSidebar"] button div[data-testid="stButton"] {{
             display: flex !important;
             justify-content: center !important;
@@ -807,7 +817,6 @@ def main_app():
             margin: 0 auto !important;
         }}
 
-        /* 3. MINIMIZED IMAGE WITH SHADOW */
         [data-testid="stImage"] img {{
             max-height: 200px;
             object-fit: cover;
@@ -819,7 +828,6 @@ def main_app():
             transform: scale(1.02);
         }}
 
-        /* 4. BUTTON ANIMATION ON HOVER */
         .stButton button, .stLinkButton a, div[data-testid="stDownloadButton"] button {{
             background-color: #f0f2f6 !important;
             color: #000000 !important;
@@ -834,7 +842,6 @@ def main_app():
             box-shadow: 0 5px 15px rgba(255, 75, 75, 0.4) !important;
         }}
 
-        /* FORCE SIDEBAR WHITE */
         [data-testid="stSidebar"] {{
             background-color: #ffffff !important;
             border-right: 1px solid rgba(0,0,0,0.1) !important;
@@ -847,7 +854,6 @@ def main_app():
             color: #000000 !important;
         }}
 
-        /* MODERN RADIO BUTTON */
         div.row-widget.stRadio > label {{
             display: none !important;
         }}
@@ -877,9 +883,7 @@ def main_app():
             border-color: #FF4B4B !important;
         }}
 
-        /* --- NEW PRO CARD STYLING (IMAGE BACKGROUND) --- */
         .rec-card {{
-            /* Fallback background if image fails */
             background-color: #2b2b2b;
             background-size: cover;
             background-position: center;
@@ -887,7 +891,7 @@ def main_app():
             
             border: 1px solid rgba(255, 75, 75, 0.2);
             border-radius: 15px;
-            height: 350px; /* Slightly shorter to fit button below */
+            height: 350px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -904,7 +908,6 @@ def main_app():
             border-color: #FF4B4B;
         }}
         
-        /* Dark Gradient Overlay for Text Readability */
         .card-content {{
             padding: 20px;
             z-index: 2;
@@ -924,14 +927,13 @@ def main_app():
             font-size: 0.75rem;
             color: #ddd;
             display: -webkit-box;
-            -webkit-line-clamp: 2; /* Truncated on card, full in dialog */
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             margin-top: 5px;
             text-shadow: 0 1px 2px black;
         }}
 
-        /* INPUT LABELS */
         div[data-testid="stSelectbox"] > label {{
             color: {input_label_color} !important;
             font-weight: 900 !important;
@@ -940,7 +942,6 @@ def main_app():
         }}
         @keyframes glow {{ from {{ text-shadow: 0 0 2px {input_label_color}; }} to {{ text-shadow: 0 0 10px #FF4B4B; }} }}
         
-        /* CONSTANT PULSE ANIMATION FOR HEADER */
         @keyframes breathing {{
             0% {{ transform: scale(1); }}
             50% {{ transform: scale(1.03); text-shadow: 0 0 10px rgba(255, 75, 75, 0.3); }}
@@ -966,7 +967,6 @@ def main_app():
         try:
             recommended_titles = []
 
-            # 1. ENGINE SELECTION
             if method == 'Content-Based Filtering':
                 idx = movies_df[movies_df['title'] == movie].index[0]
                 sim = content_similarity[idx]
@@ -974,29 +974,21 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(movies_df.iloc[i[0]].title)
             else:
-                # Collaborative
                 idx = list(collab_titles).index(movie)
                 sim = collab_similarity[idx]
                 scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
                 for i in scores:
                     recommended_titles.append(collab_titles[i[0]])
 
-            # 2. FETCH DETAILS & GENERATE POSTERS
             result = []
             for title in recommended_titles:
                 row = find_movie_row(movies_df, title)
-                
-                # Defaults
                 overview = "No details available."
-                img_url = ""
-
                 if row is not None:
-                    # Overview
                     if method == 'Content-Based Filtering':
                         overview = row.get("overview", "")
                         if pd.isna(overview): overview = "No details available."
                 
-                # --- INSTANT IMAGE FETCHING (Bing Thumbnail Hack) ---
                 safe_title = urllib.parse.quote(title)
                 img_url = f"https://tse2.mm.bing.net/th?q={safe_title}+movie+poster&w=500&h=750&c=7&rs=1&p=0"
 
@@ -1018,7 +1010,6 @@ def main_app():
     # --- UI BODY ---
     st.image("https://preview.redd.it/can-i-see-all-the-movies-i-watched-in-2024-in-the-grid-view-v0-cog8js189l9e1.png?format=png&auto=webp&s=cb06477a6c7f54a331593c5a145d7023595d4d47", use_container_width=True)
 
-    # HEADER WITH ANIMATION
     st.markdown('<h2 class="main-header" style="text-align: center; color: #FF4B4B; font-size: 3rem; font-weight: 800;">RECOMMEND WITH AI</h2>', unsafe_allow_html=True)
 
     with st.container():
@@ -1045,7 +1036,7 @@ def main_app():
                     clear_results()
                     st.rerun()
 
-    # --- RESULTS DISPLAY (CARDS WITH INTERACTION) ---
+    # --- RESULTS DISPLAY ---
     if st.session_state.recommendations:
         st.markdown("---")
         st.subheader(f"Because you liked '{st.session_state.selected_movie_name}':")
@@ -1054,7 +1045,6 @@ def main_app():
         
         for i, movie in enumerate(st.session_state.recommendations):
             with cols[i]:
-                # 1. Render Visual Card (HTML)
                 overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
                 
                 st.markdown(f"""
@@ -1066,8 +1056,6 @@ def main_app():
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # 2. Render Interaction Button (Python)
-                # This button triggers the dialog with details and download links
                 if st.button("👁️ View Details & Watch", key=f"view_btn_{i}", use_container_width=True):
                     show_movie_details(movie)
 
