@@ -631,8 +631,8 @@ def main_app():
                         video_id = results[0]['id']
                         video_url = f"https://www.youtube.com/watch?v={video_id}"
                         
-                        # --- FIX: ADDED UNIQUE KEY TO PREVENT GHOSTING ---
-                        st.video(video_url, key=f"video_{movie['title']}_{video_id}")
+                        # --- FIX: ADDED UNIQUE RANDOM KEY TO PREVENT GHOSTING ---
+                        st.video(video_url, key=f"trailer_{uuid.uuid4()}")
                         
                         found_trailer = True
                 except Exception as e:
@@ -1075,38 +1075,53 @@ def main_app():
     # --- 🦶 NEW MODERN FOOTER ---
     st.markdown("""
         <style>
-        .g4-footer {
-            margin-top: 80px;
-            padding: 30px;
-            border-top: 1px solid rgba(255, 75, 75, 0.2);
-            background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
+        .footer-container {
+            width: 100%;
             text-align: center;
-            color: #888;
+            padding: 25px 10px;
+            margin-top: 40px;
+            color: #ffffff;
+            background: linear-gradient(90deg, #1a1a1a, #3a0d0d, #1a1a1a);
+            border-top: 2px solid #FF4B4B;
+            font-family: 'Segoe UI', sans-serif;
+            box-shadow: 0 -2px 10px rgba(255, 75, 75, 0.2);
         }
-        .g4-footer strong {
+
+        .footer-container a {
             color: #FF4B4B;
-        }
-        .g4-footer a {
-            color: inherit;
             text-decoration: none;
-            margin: 0 10px;
-            transition: color 0.3s;
+            font-weight: bold;
         }
-        .g4-footer a:hover {
-            color: #FF4B4B;
+
+        .footer-icons {
+            margin-top: 8px;
+            font-size: 18px;
+            letter-spacing: 10px;
+        }
+
+        .footer-small {
+            margin-top: 8px;
+            font-size: 12px;
+            opacity: 0.7;
         }
         </style>
-        
-        <div class="g4-footer">
-            <p>🚀 Powered by <strong>G4 SOLUTION</strong> | 🎓 Thrive Africa Class of '24</p>
-            <p style="font-size: 0.8rem; margin-top: 10px;">
-                <a href="#">Privacy Policy</a> • 
-                <a href="#">Terms of Use</a> • 
-                <a href="#">Contact Support</a>
-            </p>
-            <p style="font-size: 0.7rem; margin-top: 10px; opacity: 0.6;">
-                &copy; 2025 All Rights Reserved. Built with ❤️ and Streamlit.
-            </p>
+
+        <div class="footer-container">
+            <div>🎬 <strong>G4 Solution Movie Recommender</strong> — Powered by AI</div>
+
+            <div class="footer-icons">
+                ⭐ 🎥 🍿 🔥 🎬
+            </div>
+
+            <div class="footer-small">
+                © 2025 G4 Solution | Built with ❤️ using Streamlit  
+            </div>
+
+            <div class="footer-small">
+                <a href="https://github.com/AgyekumPeter123/Movie-Recommendation-System/" target="_blank">
+                    Visit Github Repo.
+                </a>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
