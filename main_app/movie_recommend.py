@@ -688,8 +688,8 @@ def main_app():
 
         st.divider()
         
-        # 8. Dark Mode Toggle
-        dark_mode = st.toggle("🌙 Dark Mode", value=True)
+        # 8. Dark Mode Toggle (FIXED KEY ADDED)
+        dark_mode = st.toggle("🌙 Dark Mode", value=True, key="theme_toggle")
 
     # --- THEME LOGIC ---
     if dark_mode:
