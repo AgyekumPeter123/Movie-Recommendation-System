@@ -11,6 +11,7 @@ import re
 import random
 import string
 import smtplib
+import urllib.parse
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -831,13 +832,17 @@ def main_app():
             border-color: #FF4B4B !important;
         }}
 
-        /* --- NEW PRO CARD STYLING (TEXT ONLY) --- */
+        /* --- NEW PRO CARD STYLING (IMAGE BACKGROUND) --- */
         .rec-card {{
-            /* Replaced image background with professional gradient */
-            background: linear-gradient(135deg, #2b2b2b, #1a1a1a);
+            /* Fallback background if image fails */
+            background-color: #2b2b2b;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
             border: 1px solid rgba(255, 75, 75, 0.2);
             border-radius: 15px;
-            height: 350px; 
+            height: 400px; /* Slightly taller for poster aspect ratio */
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -852,28 +857,32 @@ def main_app():
             box-shadow: 0 15px 30px rgba(255, 75, 75, 0.4);
             border-color: #FF4B4B;
         }}
+        
+        /* Dark Gradient Overlay for Text Readability */
         .card-content {{
             padding: 20px;
             z-index: 2;
             width: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 60%, transparent 100%);
         }}
+        
         .movie-title {{
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 900;
             color: white;
-            text-shadow: 0 0 10px rgba(255, 75, 75, 0.5);
-            margin-bottom: 10px;
+            text-shadow: 0 2px 4px black;
+            margin-bottom: 5px;
             line-height: 1.2;
         }}
         .movie-overview {{
-            font-size: 0.8rem;
-            color: #ccc;
+            font-size: 0.75rem;
+            color: #ddd;
             display: -webkit-box;
-            -webkit-line-clamp: 6; 
+            -webkit-line-clamp: 3; 
             -webkit-box-orient: vertical;
             overflow: hidden;
             margin-top: 5px;
+            text-shadow: 0 1px 2px black;
         }}
 
         /* INPUT LABELS */
@@ -910,9 +919,6 @@ def main_app():
     def get_recommendations(movie, method):
         try:
             recommended_titles = []
-            
-            # --- EMOJI POOL (PERSISTENT) ---
-            emojis = ['🎬', '🍿', '🎥', '🎞️', '🌟', '🎭', '📺', '🎟️', '🤩', '🔥', '👽', '🤖', '👻', '💀', '🧚', '🧜', '🧛', '🧞', '🧶', '🧵']
 
             # 1. ENGINE SELECTION
             if method == 'Content-Based Filtering':
@@ -929,32 +935,52 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(collab_titles[i[0]])
 
-            # 2. FETCH DETAILS (UPDATED: REMOVED IMAGES & META)
+            # 2. FETCH DETAILS & IMAGES
             result = []
             for title in recommended_titles:
                 row = find_movie_row(movies_df, title)
                 
                 # Defaults
                 overview = "No details available."
+                img_url = ""
 
                 if row is not None:
                     # Overview
                     if method == 'Content-Based Filtering':
                         overview = row.get("overview", "")
                         if pd.isna(overview): overview = "No details available."
-                
-                # Pick Random Emoji here so it saves with the state
-                emoji_icon = random.choice(emojis)
+                    
+                    # --- IMAGE FETCHING LOGIC ---
+                    # 1. Try Poster Path (Vertical)
+                    poster_path = row.get('poster_path')
+                    
+                    # 2. If no Poster, try Backdrop Path (Horizontal)
+                    if pd.isna(poster_path) or not poster_path:
+                        poster_path = row.get('backdrop_path')
+                    
+                    # 3. Construct URL if path exists
+                    if not pd.isna(poster_path) and poster_path:
+                        img_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                    else:
+                        # 4. Fallback: Generate image using Title text
+                        safe_title = urllib.parse.quote(title)
+                        img_url = f"https://placehold.co/400x600?text={safe_title}"
+
+                else:
+                    # Row not found fallback
+                    safe_title = urllib.parse.quote(title)
+                    img_url = f"https://placehold.co/400x600?text={safe_title}"
 
                 result.append({
                     'title': title,
                     'info': overview,
-                    'emoji': emoji_icon
+                    'image': img_url
                 })
 
             return result
 
         except Exception as e:
+            st.error(f"Error fetching recommendations: {e}")
             return []
 
     def clear_results():
@@ -1003,12 +1029,9 @@ def main_app():
                 # Show overview only if it exists
                 overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
                 
-                # Render New Card HTML (Text Only + Emoji)
+                # Render New Card HTML (Image Background)
                 st.markdown(f"""
-                <div class="rec-card">
-                    <div style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem;">
-                        {movie['emoji']}
-                    </div>
+                <div class="rec-card" style="background-image: url('{movie['image']}');">
                     <div class="card-content">
                         <div class="movie-title">{movie['title']}</div>
                         {overview_html}
