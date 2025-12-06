@@ -935,7 +935,7 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(collab_titles[i[0]])
 
-            # 2. FETCH DETAILS & IMAGES
+            # 2. FETCH DETAILS & GENERATE POSTERS
             result = []
             for title in recommended_titles:
                 row = find_movie_row(movies_df, title)
@@ -949,27 +949,11 @@ def main_app():
                     if method == 'Content-Based Filtering':
                         overview = row.get("overview", "")
                         if pd.isna(overview): overview = "No details available."
-                    
-                    # --- IMAGE FETCHING LOGIC ---
-                    # 1. Try Poster Path (Vertical)
-                    poster_path = row.get('poster_path')
-                    
-                    # 2. If no Poster, try Backdrop Path (Horizontal)
-                    if pd.isna(poster_path) or not poster_path:
-                        poster_path = row.get('backdrop_path')
-                    
-                    # 3. Construct URL if path exists
-                    if not pd.isna(poster_path) and poster_path:
-                        img_url = f"https://image.tmdb.org/t/p/w500{poster_path}"
-                    else:
-                        # 4. Fallback: Generate image using Title text
-                        safe_title = urllib.parse.quote(title)
-                        img_url = f"https://placehold.co/400x600?text={safe_title}"
-
-                else:
-                    # Row not found fallback
-                    safe_title = urllib.parse.quote(title)
-                    img_url = f"https://placehold.co/400x600?text={safe_title}"
+                
+                # --- AI POSTER GENERATION ---
+                # This constructs a URL that triggers an AI to create a unique poster based on the title
+                safe_title = urllib.parse.quote(title)
+                img_url = f"https://image.pollinations.ai/prompt/movie%20poster%20art%20for%20{safe_title}?nologo=true"
 
                 result.append({
                     'title': title,
@@ -980,7 +964,6 @@ def main_app():
             return result
 
         except Exception as e:
-            st.error(f"Error fetching recommendations: {e}")
             return []
 
     def clear_results():
