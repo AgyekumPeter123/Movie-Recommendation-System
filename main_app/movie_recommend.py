@@ -245,15 +245,41 @@ def login_page():
             position: relative;
         }
 
-        /* === 🔮 GLASSMORPHISM FOR LOGIN FORM (Middle Column) === */
-        div[data-testid="column"]:nth-of-type(2) {
-            background: rgba(255, 255, 255, 0.05); /* Very transparent for glass effect */
-            backdrop-filter: blur(15px); /* This blurs the animation behind it */
-            -webkit-backdrop-filter: blur(15px); /* Safari support */
+        /* === 🔥 100% FIXED GLASSMORPHISM + NEON GLOW (Middle Column) === */
+        
+        div.stColumns > div:nth-child(2) {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            
+            /* NEON GLOW EFFECTS */
+            border: 1px solid rgba(255, 75, 75, 0.5); /* Red tinted border */
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.5),          /* Deep shadow */
+                0 0 15px rgba(255, 75, 75, 0.2),        /* Inner glow */
+                0 0 30px rgba(255, 75, 75, 0.1);        /* Outer glow */
+            
             padding: 2rem;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            animation: neon-pulse 4s ease-in-out infinite alternate;
+        }
+
+        /* Pulsing Animation for the Neon Glow */
+        @keyframes neon-pulse {
+            0% {
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.5),
+                    0 0 10px rgba(255, 75, 75, 0.1),
+                    0 0 20px rgba(255, 75, 75, 0.05);
+                border-color: rgba(255, 75, 75, 0.3);
+            }
+            100% {
+                box-shadow: 
+                    0 8px 32px rgba(0, 0, 0, 0.6),
+                    0 0 20px rgba(255, 75, 75, 0.4),
+                    0 0 45px rgba(255, 75, 75, 0.2);
+                border-color: rgba(255, 75, 75, 0.8);
+            }
         }
 
     </style>
@@ -300,6 +326,7 @@ def login_page():
                     font-size: 1.5rem;
                     font-weight: 900;
                     color: #FF4B4B;
+                    text-shadow: 0 0 5px rgba(255, 75, 75, 0.5); /* Text glow */
                     text-align: center;
                     min-height: 40px;
                 }
@@ -309,11 +336,12 @@ def login_page():
                     background: #FF4B4B;
                     margin-left: 3px;
                     animation: blink 0.6s infinite;
+                    box-shadow: 0 0 5px #FF4B4B;
                 }
                 .subtitle {
                     margin: 0;
                     margin-top: 10px;
-                    opacity: 0.7;
+                    opacity: 0.8;
                     color: white; /* Default for dark mode */
                     font-size: 0.9rem;
                 }
