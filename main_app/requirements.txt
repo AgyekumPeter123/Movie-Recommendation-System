@@ -3,3 +3,4 @@ pandas
 numpy
 scikit-learn
 youtube-search
+requests
