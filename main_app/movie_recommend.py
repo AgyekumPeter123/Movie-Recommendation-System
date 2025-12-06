@@ -1113,7 +1113,7 @@ def main_app():
     # --- 2. NEW FEATURE: FOOTER ---
     st.markdown(f"""
     <div class="footer">
-        © 2025 <b>G4 SOLUTION</b> | Powered by Streamlit & Thrive Africa <br>
+        © 2025 <b>G4 SOLUTION</b> | Powered by G4 Solution, Proudly Emerged from Thrive Africa <br>
         <i>"Connecting you to the stories you love."</i>
     </div>
     """, unsafe_allow_html=True)
