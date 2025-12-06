@@ -202,13 +202,12 @@ def login_page():
             z-index: 0; /* Behind the form */
             pointer-events: none; /* Let clicks pass through */
             overflow: hidden;
-            background-color: #1a1a1a; /* Dark background base for visibility */
         }
 
         .anim-text {
             font-size: 8rem; 
             font-weight: 900;
-            color: rgba(255, 255, 255, 0.05); /* Very Subtle White transparent */
+            color: rgba(128, 128, 128, 0.15); /* Subtle Grey transparent */
             text-transform: uppercase;
             white-space: nowrap;
         }
@@ -246,25 +245,15 @@ def login_page():
             position: relative;
         }
 
-        /* === 🔮 STRONG GLASSMORPHISM FOR LOGIN FORM (Middle Column) === */
+        /* === 🔮 GLASSMORPHISM FOR LOGIN FORM (Middle Column) === */
         div[data-testid="column"]:nth-of-type(2) {
-            background-color: rgba(0, 0, 0, 0.6) !important; /* DARK GLASS */
-            backdrop-filter: blur(15px) !important; /* STRONG BLUR */
-            -webkit-backdrop-filter: blur(15px);
-            border-radius: 25px !important;
-            border: 1px solid rgba(255, 75, 75, 0.3) !important; /* RED GLOW BORDER */
-            padding: 40px !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6) !important; /* DEEP SHADOW */
-        }
-        
-        /* Override text inputs to look good on dark glass */
-        div[data-testid="column"]:nth-of-type(2) label {
-            color: white !important;
-        }
-        div[data-testid="column"]:nth-of-type(2) .stTextInput input {
-            background-color: rgba(255, 255, 255, 0.1) !important;
-            color: white !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            background: rgba(255, 255, 255, 0.05); /* Very transparent for glass effect */
+            backdrop-filter: blur(15px); /* This blurs the animation behind it */
+            -webkit-backdrop-filter: blur(15px); /* Safari support */
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
     </style>
@@ -280,6 +269,7 @@ def login_page():
     
     with col2:
         # === TYPEWRITER COMPONENT ===
+        # Updated to remove internal glass styling so it blends with the parent column
         typewriter_html = """
         <!DOCTYPE html>
         <html>
@@ -295,6 +285,7 @@ def login_page():
                     font-family: 'Source Sans Pro', sans-serif;
                 }
                 .glass-card {
+                    /* Made transparent to let the parent column glass effect shine through */
                     background-color: transparent; 
                     padding: 10px;
                     border-radius: 20px;
@@ -322,10 +313,12 @@ def login_page():
                 .subtitle {
                     margin: 0;
                     margin-top: 10px;
-                    opacity: 0.9;
-                    color: white; 
+                    opacity: 0.7;
+                    color: white; /* Default for dark mode */
                     font-size: 0.9rem;
-                    font-weight: bold;
+                }
+                @media (prefers-color-scheme: light) {
+                    .subtitle { color: black; }
                 }
                 @keyframes blink {
                     0%, 50% { opacity: 1; }
