@@ -207,7 +207,7 @@ def login_page():
         .anim-text {
             font-size: 8rem; 
             font-weight: 900;
-            color: rgba(128, 128, 128, 0.15); /* Subtle Grey transparent */
+            color: rgba(255, 128, 128, 0.15); /* Subtle Grey transparent */
             text-transform: uppercase;
             white-space: nowrap;
         }
