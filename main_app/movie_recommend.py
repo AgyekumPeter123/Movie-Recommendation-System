@@ -207,36 +207,35 @@ def login_page():
         .anim-text {
             font-size: 8rem; 
             font-weight: 900;
-            color: rgba(255, 255, 255, 0.4); 
-            text-shadow: 0 0 20px rgba(255, 75, 75, 0.5); /* Red Glow */
+            color: rgba(255, 255, 255, 0.5); /* Good visibility */
+            text-shadow: 0 0 30px rgba(255, 75, 75, 0.6); /* Strong Red Glow */
             text-transform: uppercase;
             white-space: nowrap;
         }
 
         .g4-part {
-            animation: moveFromLeft 12s ease-in-out infinite; 
+            animation: moveFromLeft 15s linear infinite; /* 15s Slow Cycle */
             margin-right: 20px; 
         }
 
         .solution-part {
-            animation: moveFromRight 12s ease-in-out infinite; 
+            animation: moveFromRight 15s linear infinite; /* 15s Slow Cycle */
         }
 
-        /* --- UPDATED KEYFRAMES FOR SLOW ENTRY / FAST EXIT --- */
+        /* --- UPDATED LOGIC: Slow Entrance -> Instant Vanish at Center --- */
+        
         @keyframes moveFromLeft {
             0% { transform: translateX(-100vw); opacity: 0; }
-            35% { transform: translateX(0); opacity: 1; } /* Slow Entry (takes 35% of time) */
-            90% { transform: translateX(0); opacity: 1; } /* Stay Visible until 90% */
-            95% { transform: translateX(0); opacity: 0; } /* VERY QUICK FADE OFF */
-            100% { transform: translateX(-100vw); opacity: 0; }
+            10% { transform: translateX(-80vw); opacity: 1; }  /* Fade in quickly while far away */
+            98% { transform: translateX(0); opacity: 1; }      /* Move SLOWLY to center */
+            100% { transform: translateX(0); opacity: 0; }     /* Vanish instantly upon touching */
         }
 
         @keyframes moveFromRight {
             0% { transform: translateX(100vw); opacity: 0; }
-            35% { transform: translateX(0); opacity: 1; } /* Slow Entry */
-            90% { transform: translateX(0); opacity: 1; } /* Stay Visible */
-            95% { transform: translateX(0); opacity: 0; } /* VERY QUICK FADE OFF */
-            100% { transform: translateX(100vw); opacity: 0; }
+            10% { transform: translateX(80vw); opacity: 1; }   /* Fade in quickly while far away */
+            98% { transform: translateX(0); opacity: 1; }      /* Move SLOWLY to center */
+            100% { transform: translateX(0); opacity: 0; }     /* Vanish instantly upon touching */
         }
         
         div[data-testid="stVerticalBlock"] > div {
