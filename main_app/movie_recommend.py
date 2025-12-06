@@ -950,10 +950,10 @@ def main_app():
                         overview = row.get("overview", "")
                         if pd.isna(overview): overview = "No details available."
                 
-                # --- AI POSTER GENERATION ---
-                # This constructs a URL that triggers an AI to create a unique poster based on the title
+                # --- INSTANT IMAGE FETCHING (Bing Thumbnail Hack) ---
+                # This fetches a small cached thumbnail from Bing Images instantly based on the title
                 safe_title = urllib.parse.quote(title)
-                img_url = f"https://image.pollinations.ai/prompt/movie%20poster%20art%20for%20{safe_title}?nologo=true"
+                img_url = f"https://tse2.mm.bing.net/th?q={safe_title}+movie+poster&w=500&h=750&c=7&rs=1&p=0"
 
                 result.append({
                     'title': title,
