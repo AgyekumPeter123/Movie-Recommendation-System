@@ -2,7 +2,7 @@ import os
 import pickle
 import gzip
 import pandas as pd
-import requests # <--- ADDED for API
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
 import json
@@ -13,6 +13,7 @@ import random
 import string
 import smtplib
 import urllib.parse
+import html  # <--- ESSENTIAL IMPORT FOR FIXING HTML BUGS
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
@@ -1124,19 +1125,29 @@ def main_app():
         
         for i, movie in enumerate(st.session_state.recommendations):
             with cols[i]:
-                # Updated HTML Card to include Genre
-                genre_html = f'<div class="movie-genre">{movie["genre"]}</div>' if movie["genre"] else ""
-                overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
+                # 1. Sanitize the text (Fixes the </div> glitch)
+                # We use html.escape() to ensure special characters don't break the HTML
+                clean_title = html.escape(str(movie['title']))
+                clean_genre = html.escape(str(movie.get('genre', '')))
+                clean_info = html.escape(str(movie.get('info', '')))
+
+                # 2. Construct HTML parts conditionally
+                genre_html = f'<div class="movie-genre">{clean_genre}</div>' if clean_genre else ""
+                overview_html = f'<div class="movie-overview">{clean_info}</div>' if clean_info else ""
                 
-                st.markdown(f"""
+                # 3. Render Card
+                # We build the string first to avoid Markdown indentation issues
+                card_html = f"""
                 <div class="rec-card" style="background-image: url('{movie['image']}');">
                     <div class="card-content">
-                        <div class="movie-title">{movie['title']}</div>
+                        <div class="movie-title">{clean_title}</div>
                         {genre_html}
                         {overview_html}
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
+                """
+                
+                st.markdown(card_html, unsafe_allow_html=True)
                 
                 if st.button("👁️ View Details & Watch", key=f"view_btn_{i}", use_container_width=True):
                     show_movie_details(movie)
