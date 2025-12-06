@@ -407,7 +407,7 @@ def login_page():
             l_user = st.text_input("Username", key="l_user")
             l_pass = st.text_input("Password", type="password", key="l_pass")
             
-            if st.button("🚀 Get Access", type="primary", use_container_width=True):
+            if st.button("🚀 Enter App", type="primary", use_container_width=True):
                 if l_user and l_pass:
                     is_valid, user_data = authenticate_user(l_user, l_pass)
                     if is_valid:
@@ -893,6 +893,9 @@ def main_app():
     def get_recommendations(movie, method):
         try:
             recommended_titles = []
+            
+            # --- EMOJI POOL (PERSISTENT) ---
+            emojis = ['🎬', '🍿', '🎥', '🎞️', '🌟', '🎭', '📺', '🎟️', '🤩', '🔥', '👽', '🤖', '👻', '💀', '🧚', '🧜', '🧛', '🧞', '🧶', '🧵']
 
             # 1. ENGINE SELECTION
             if method == 'Content-Based Filtering':
@@ -922,10 +925,14 @@ def main_app():
                     if method == 'Content-Based Filtering':
                         overview = row.get("overview", "")
                         if pd.isna(overview): overview = "No details available."
+                
+                # Pick Random Emoji here so it saves with the state
+                emoji_icon = random.choice(emojis)
 
                 result.append({
                     'title': title,
-                    'info': overview
+                    'info': overview,
+                    'emoji': emoji_icon
                 })
 
             return result
@@ -979,9 +986,12 @@ def main_app():
                 # Show overview only if it exists
                 overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
                 
-                # Render New Card HTML (Text Only)
+                # Render New Card HTML (Text Only + Emoji)
                 st.markdown(f"""
                 <div class="rec-card">
+                    <div style="position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: 5rem;">
+                        {movie['emoji']}
+                    </div>
                     <div class="card-content">
                         <div class="movie-title">{movie['title']}</div>
                         {overview_html}
