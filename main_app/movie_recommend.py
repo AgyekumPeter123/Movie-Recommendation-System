@@ -245,20 +245,20 @@ def login_page():
             position: relative;
         }
 
-        /* === 🔥 100% FIXED GLASSMORPHISM + NEON GLOW (Middle Column) === */
-        
-        div.stColumns > div:nth-child(2) {
+        /* === 🔥 FIXED GLASSMORPHISM (UPDATED SELECTOR) === */
+        /* Targets the 2nd column in the horizontal layout (the middle one) */
+        div[data-testid="stHorizontalBlock"] > div:nth-child(2),
+        div[data-testid="column"] > div:nth-child(2) {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
-            border-radius: 20px;
             
-            /* NEON GLOW EFFECTS */
-            border: 1px solid rgba(255, 75, 75, 0.5); /* Red tinted border */
-            box-shadow: 
-                0 8px 32px rgba(0, 0, 0, 0.5),          /* Deep shadow */
-                0 0 15px rgba(255, 75, 75, 0.2),        /* Inner glow */
-                0 0 30px rgba(255, 75, 75, 0.1);        /* Outer glow */
+            border-radius: 20px;
+            border: 1px solid rgba(255, 75, 75, 0.5);
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                0 0 15px rgba(255, 75, 75, 0.2),
+                0 0 30px rgba(255, 75, 75, 0.1);
             
             padding: 2rem;
             animation: neon-pulse 4s ease-in-out infinite alternate;
@@ -295,7 +295,6 @@ def login_page():
     
     with col2:
         # === TYPEWRITER COMPONENT ===
-        # Updated to remove internal glass styling so it blends with the parent column
         typewriter_html = """
         <!DOCTYPE html>
         <html>
