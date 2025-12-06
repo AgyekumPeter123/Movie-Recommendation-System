@@ -578,6 +578,23 @@ def main_app():
         if not match.empty:
             return match.iloc[0]
         return None
+    
+    # --- 1. NEW FEATURE: HOW IT WORKS DIALOG ---
+    @st.dialog("📚 How to Use G4 Solution")
+    def show_help_dialog():
+        st.markdown("""
+        ### 1. Choose Your Engine ⚙️
+        - **Content-Based:** Recommendations based on movie similarity (plot, genre, cast). Great if you want more of the same!
+        - **Collaborative:** Recommendations based on what similar users liked. Great for discovering new hits!
+        
+        ### 2. Select a Movie 🎬
+        Pick a movie you enjoy from the dropdown list.
+        
+        ### 3. Get Results 🚀
+        Click **Find Recommendations** to see AI-curated picks. You can then:
+        - View details and trailers.
+        - Download your history.
+        """)
 
     # --- HISTORY POPUP DIALOG ---
     @st.dialog("📜 Historical Record")
@@ -724,6 +741,11 @@ def main_app():
 
         # 5. Quick Links
         st.markdown("### 🚀 Quick Links")
+        
+        # --- NEW FEATURE: BUTTON FOR DIALOG ---
+        if st.button("❓ How it Works", use_container_width=True):
+            show_help_dialog()
+            
         st.link_button("💬 Join WhatsApp Team", "https://chat.whatsapp.com/DsyWXB9DzG19CbTjK8dKhF?mode=hqrt2", use_container_width=True)
         st.link_button("📂 Access Notebook", "https://colab.research.google.com/drive/1XvRHy3z1cDWH51EuRegY_i-FWH2t2ypn?usp=drive_link", use_container_width=True)
         st.link_button("📚 Study With Thrive Africa", "https://thriveafrica.co/campus", use_container_width=True)
@@ -773,11 +795,13 @@ def main_app():
         text_color = "#ffffff"
         label_color = "#FF4B4B"
         input_label_color = "#ffffff"
+        footer_bg = "#262730"
     else:
         main_bg = "#ffffff"
         text_color = "#000000"
         label_color = "#FF4B4B"
         input_label_color = "#8B0000"
+        footer_bg = "#f0f2f6"
 
     # --- CSS INJECTION ---
     st.markdown(f"""
@@ -953,7 +977,19 @@ def main_app():
             display: inline-block; 
         }}
 
-        .stDeployButton {{ visibility: hidden; }}
+        /* === FOOTER STYLE === */
+        .footer {{
+            width: 100%;
+            background-color: {footer_bg};
+            color: {text_color};
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            font-size: 0.9rem;
+            border-radius: 10px 10px 0 0;
+            opacity: 0.8;
+        }}
         </style>
     """, unsafe_allow_html=True)
 
@@ -974,11 +1010,14 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(movies_df.iloc[i[0]].title)
             else:
-                idx = list(collab_titles).index(movie)
-                sim = collab_similarity[idx]
-                scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
-                for i in scores:
-                    recommended_titles.append(collab_titles[i[0]])
+                if movie in collab_titles:
+                    idx = list(collab_titles).index(movie)
+                    sim = collab_similarity[idx]
+                    scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
+                    for i in scores:
+                        recommended_titles.append(collab_titles[i[0]])
+                else:
+                    return []
 
             result = []
             for title in recommended_titles:
@@ -1065,10 +1104,19 @@ def main_app():
         export_text = f"G4 SOLUTION Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
         for i, m in enumerate(st.session_state.recommendations, 1):
             export_text += f"{i}. {m['title']}\n"
-            if m['info']: export_text += f"   {m['info']}\n"
+            if m['info']:
+                export_text += f"   {m['info']}\n"
             export_text += "\n"
         
         st.download_button("📄 Export Results List", data=export_text, file_name="g4_recs.txt", use_container_width=True)
+
+    # --- 2. NEW FEATURE: FOOTER ---
+    st.markdown(f"""
+    <div class="footer">
+        © 2025 <b>G4 SOLUTION</b> | Powered by Streamlit & Thrive Africa <br>
+        <i>"Connecting you to the stories you love."</i>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- CONTROL FLOW ---
 if not st.session_state.logged_in:
