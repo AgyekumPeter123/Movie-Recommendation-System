@@ -204,41 +204,38 @@ def login_page():
             overflow: hidden;
         }
 
-        /* UPDATED: 
-           1. Increased font brightness for visibility (rgba(255, 255, 255, 0.4))
-           2. Slowed down animation to 12s
-        */
         .anim-text {
             font-size: 8rem; 
             font-weight: 900;
-            color: rgba(255, 255, 255, 0.4); /* Much brighter so it shows through glass */
+            color: rgba(255, 255, 255, 0.4); 
             text-shadow: 0 0 20px rgba(255, 75, 75, 0.5); /* Red Glow */
             text-transform: uppercase;
             white-space: nowrap;
         }
 
         .g4-part {
-            animation: moveFromLeft 12s ease-in-out infinite; /* Slowed to 12s */
+            animation: moveFromLeft 12s ease-in-out infinite; 
             margin-right: 20px; 
         }
 
         .solution-part {
-            animation: moveFromRight 12s ease-in-out infinite; /* Slowed to 12s */
+            animation: moveFromRight 12s ease-in-out infinite; 
         }
 
+        /* --- UPDATED KEYFRAMES FOR SLOW ENTRY / FAST EXIT --- */
         @keyframes moveFromLeft {
             0% { transform: translateX(-100vw); opacity: 0; }
-            30% { transform: translateX(0); opacity: 1; }
-            70% { transform: translateX(0); opacity: 1; }
-            90% { transform: translateX(0); opacity: 0; }
+            35% { transform: translateX(0); opacity: 1; } /* Slow Entry (takes 35% of time) */
+            90% { transform: translateX(0); opacity: 1; } /* Stay Visible until 90% */
+            95% { transform: translateX(0); opacity: 0; } /* VERY QUICK FADE OFF */
             100% { transform: translateX(-100vw); opacity: 0; }
         }
 
         @keyframes moveFromRight {
             0% { transform: translateX(100vw); opacity: 0; }
-            30% { transform: translateX(0); opacity: 1; }
-            70% { transform: translateX(0); opacity: 1; }
-            90% { transform: translateX(0); opacity: 0; }
+            35% { transform: translateX(0); opacity: 1; } /* Slow Entry */
+            90% { transform: translateX(0); opacity: 1; } /* Stay Visible */
+            95% { transform: translateX(0); opacity: 0; } /* VERY QUICK FADE OFF */
             100% { transform: translateX(100vw); opacity: 0; }
         }
         
