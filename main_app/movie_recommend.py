@@ -177,12 +177,12 @@ if 'fp_otp' not in st.session_state:
 if 'fp_username' not in st.session_state:
     st.session_state.fp_username = None
 
-# --- EXTERNAL LINKS ---
+# --- EXTERNAL LINKS CONFIGURATION ---
 external_links = {
-    "Nkiri (Download)": "https://thenkiri.com",
-    "Fzmovies (Download)": "https://fzmovie.co.za",
-    "Netflix (Stream)": "https://www.netflix.com",
-    "MovieBox (Stream)": "https://moviebox.ph"
+    "Nkiri (Download)": "https://thenkiri.com/?s=",
+    "Fzmovies (Download)": "https://fzmovie.co.za/?s=",
+    "Netflix (Stream)": "https://www.netflix.com/search?q=",
+    "MovieBox (Stream)": "https://moviebox.ph/search?q="
 }
 
 # --- LOGIN / SIGNUP PAGE ---
@@ -598,6 +598,52 @@ def main_app():
             use_container_width=True
         )
 
+    # --- 🎬 MOVIE DETAILS DIALOG (THE NEW FEATURE) ---
+    @st.dialog("📽️ Movie Details", width="large")
+    def show_movie_details(movie):
+        # 1. Header with Image and Title
+        col_img, col_txt = st.columns([1, 2])
+        with col_img:
+            st.image(movie['image'], use_container_width=True)
+        with col_txt:
+            st.header(movie['title'])
+            st.markdown("### Overview")
+            # Show full text without truncation
+            st.write(movie['info'])
+
+        st.divider()
+        
+        # 2. Watch Trailer Button
+        st.markdown("### 🍿 Watch Trailer")
+        # Construct YouTube Search Query
+        yt_query = urllib.parse.quote(f"{movie['title']} trailer")
+        yt_url = f"https://www.youtube.com/results?search_query={yt_query}"
+        
+        st.link_button(
+            label="▶️ Watch Trailer on YouTube", 
+            url=yt_url, 
+            type="primary", 
+            use_container_width=True
+        )
+
+        st.divider()
+
+        # 3. External Download/Watch Links
+        st.markdown("### 📥 Download or Watch Full Movie")
+        st.caption("Select a provider below to search for this movie:")
+        
+        link_cols = st.columns(2)
+        
+        # Loop through configured external links and create dynamic search URLs
+        for idx, (site_name, base_url) in enumerate(external_links.items()):
+            # Safe URL encoding of the movie title
+            safe_title = urllib.parse.quote(movie['title'])
+            final_url = f"{base_url}{safe_title}"
+            
+            with link_cols[idx % 2]:
+                st.link_button(f"🌐 Search on {site_name}", final_url, use_container_width=True)
+
+
     # --- SESSION STATE ---
     if 'recommendations' not in st.session_state:
         st.session_state.recommendations = None
@@ -705,8 +751,7 @@ def main_app():
 
         st.divider()
         
-        # 8. Dark Mode Toggle (FIXED KEY)
-        # Unique key ensures it doesn't reset when history buttons disappear
+        # 8. Dark Mode Toggle
         dark_mode = st.toggle("🌙 Dark Mode", value=True, key="theme_toggle")
 
     # --- THEME LOGIC ---
@@ -842,7 +887,7 @@ def main_app():
             
             border: 1px solid rgba(255, 75, 75, 0.2);
             border-radius: 15px;
-            height: 400px; /* Slightly taller for poster aspect ratio */
+            height: 350px; /* Slightly shorter to fit button below */
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -850,6 +895,7 @@ def main_app():
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
+            margin-bottom: 10px;
         }}
         
         .rec-card:hover {{
@@ -878,7 +924,7 @@ def main_app():
             font-size: 0.75rem;
             color: #ddd;
             display: -webkit-box;
-            -webkit-line-clamp: 3; 
+            -webkit-line-clamp: 2; /* Truncated on card, full in dialog */
             -webkit-box-orient: vertical;
             overflow: hidden;
             margin-top: 5px;
@@ -951,7 +997,6 @@ def main_app():
                         if pd.isna(overview): overview = "No details available."
                 
                 # --- INSTANT IMAGE FETCHING (Bing Thumbnail Hack) ---
-                # This fetches a small cached thumbnail from Bing Images instantly based on the title
                 safe_title = urllib.parse.quote(title)
                 img_url = f"https://tse2.mm.bing.net/th?q={safe_title}+movie+poster&w=500&h=750&c=7&rs=1&p=0"
 
@@ -1000,7 +1045,7 @@ def main_app():
                     clear_results()
                     st.rerun()
 
-    # --- RESULTS DISPLAY (CARDS) ---
+    # --- RESULTS DISPLAY (CARDS WITH INTERACTION) ---
     if st.session_state.recommendations:
         st.markdown("---")
         st.subheader(f"Because you liked '{st.session_state.selected_movie_name}':")
@@ -1009,10 +1054,9 @@ def main_app():
         
         for i, movie in enumerate(st.session_state.recommendations):
             with cols[i]:
-                # Show overview only if it exists
+                # 1. Render Visual Card (HTML)
                 overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
                 
-                # Render New Card HTML (Image Background)
                 st.markdown(f"""
                 <div class="rec-card" style="background-image: url('{movie['image']}');">
                     <div class="card-content">
@@ -1021,26 +1065,22 @@ def main_app():
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # 2. Render Interaction Button (Python)
+                # This button triggers the dialog with details and download links
+                if st.button("👁️ View Details & Watch", key=f"view_btn_{i}", use_container_width=True):
+                    show_movie_details(movie)
 
         st.markdown("---")
-        st.header("📥 Save & Watch")
-        col_export, col_watch = st.columns([1, 2])
+        st.header("📥 Quick Export")
         
-        with col_export:
-            export_text = f"G4 SOLUTION Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
-            for i, m in enumerate(st.session_state.recommendations, 1):
-                export_text += f"{i}. {m['title']}\n"
-                if m['info']: export_text += f"   {m['info']}\n"
-                export_text += "\n"
-            
-            st.download_button("📄 Export Results", data=export_text, file_name="g4_recs.txt", use_container_width=True)
-
-        with col_watch:
-            st.write("**Where to Watch:**")
-            l_cols = st.columns(2)
-            for i, (name, url) in enumerate(external_links.items()):
-                with l_cols[i % 2]:
-                    st.link_button(f"🌐 {name}", url, use_container_width=True)
+        export_text = f"G4 SOLUTION Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
+        for i, m in enumerate(st.session_state.recommendations, 1):
+            export_text += f"{i}. {m['title']}\n"
+            if m['info']: export_text += f"   {m['info']}\n"
+            export_text += "\n"
+        
+        st.download_button("📄 Export Results List", data=export_text, file_name="g4_recs.txt", use_container_width=True)
 
 # --- CONTROL FLOW ---
 if not st.session_state.logged_in:
