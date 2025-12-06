@@ -2,6 +2,7 @@ import os
 import pickle
 import gzip
 import pandas as pd
+import requests # <--- ADDED for API
 import streamlit as st
 import streamlit.components.v1 as components
 import json
@@ -546,6 +547,9 @@ def main_app():
         </style>
     """, unsafe_allow_html=True)
 
+    # --- API CONFIGURATION ---
+    TMDB_API_KEY = "1a0e50c51630863ed6a140ec12e2bf36"
+
     # --- LOAD DATA ---
     @st.cache_data
     def load_data():
@@ -569,7 +573,60 @@ def main_app():
 
     movies_df, content_similarity, collab_similarity, collab_titles = load_data()
 
-    # --- HELPER FUNCTION ---
+    # --- NEW HELPER: FETCH GENRE MAPPING ---
+    @st.cache_data
+    def get_genre_map():
+        """Fetches the list of genre IDs and names from TMDb."""
+        try:
+            url = "https://api.themoviedb.org/3/genre/movie/list"
+            params = {"api_key": TMDB_API_KEY, "language": "en-US"}
+            response = requests.get(url, params=params)
+            data = response.json()
+            return {g['id']: g['name'] for g in data['genres']}
+        except:
+            return {}
+
+    # --- NEW HELPER: FETCH MOVIE INFO ONLINE ---
+    def fetch_movie_data_online(title, genre_map):
+        """
+        Searches TMDb for the movie title and returns:
+        (overview, image_url, genre_string)
+        """
+        try:
+            search_url = "https://api.themoviedb.org/3/search/movie"
+            params = {
+                'api_key': TMDB_API_KEY,
+                'query': title,
+                'language': 'en-US',
+                'page': 1
+            }
+            response = requests.get(search_url, params=params)
+            data = response.json()
+            
+            if data['results']:
+                # Get the best match
+                movie = data['results'][0]
+                
+                # 1. Overview
+                overview = movie.get('overview', '')
+                
+                # 2. Image
+                poster_path = movie.get('poster_path')
+                full_image = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+                
+                # 3. Genres
+                genre_ids = movie.get('genre_ids', [])
+                genres = [genre_map.get(gid) for gid in genre_ids if gid in genre_map]
+                genre_str = " • ".join(genres[:3]) if genres else "Genre Unavailable"
+                
+                return overview, full_image, genre_str
+                
+        except Exception:
+            pass
+        
+        return None, None, None
+
+    # --- HELPER FUNCTION: LOCAL FIND ---
     def find_movie_row(df, title):
         match = df[df['title'].str.lower().str.strip() == title.lower().strip()]
         if not match.empty:
@@ -612,6 +669,8 @@ def main_app():
             st.image(movie['image'], use_container_width=True)
         with col_txt:
             st.header(movie['title'])
+            if movie.get('genre'):
+                st.caption(f"🎭 **{movie['genre']}**")
             st.markdown("### Overview")
             st.write(movie['info'])
 
@@ -891,7 +950,7 @@ def main_app():
             
             border: 1px solid rgba(255, 75, 75, 0.2);
             border-radius: 15px;
-            height: 350px;
+            height: 380px;
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -909,10 +968,10 @@ def main_app():
         }}
         
         .card-content {{
-            padding: 20px;
+            padding: 15px;
             z-index: 2;
             width: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 60%, transparent 100%);
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 70%, transparent 100%);
         }}
         
         .movie-title {{
@@ -920,17 +979,24 @@ def main_app():
             font-weight: 900;
             color: white;
             text-shadow: 0 2px 4px black;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             line-height: 1.2;
         }}
-        .movie-overview {{
+        .movie-genre {{
             font-size: 0.75rem;
+            color: #FF4B4B;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }}
+        .movie-overview {{
+            font-size: 0.7rem;
             color: #ddd;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            margin-top: 5px;
             text-shadow: 0 1px 2px black;
         }}
 
@@ -974,28 +1040,41 @@ def main_app():
                 for i in scores:
                     recommended_titles.append(movies_df.iloc[i[0]].title)
             else:
-                idx = list(collab_titles).index(movie)
-                sim = collab_similarity[idx]
-                scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
-                for i in scores:
-                    recommended_titles.append(collab_titles[i[0]])
+                if movie in collab_titles:
+                    idx = list(collab_titles).index(movie)
+                    sim = collab_similarity[idx]
+                    scores = sorted(list(enumerate(sim)), key=lambda x: x[1], reverse=True)[1:6]
+                    for i in scores:
+                        recommended_titles.append(collab_titles[i[0]])
+                else:
+                    return []
 
+            # --- HYBRID FETCHING LOGIC (Online + Local Fallback) ---
             result = []
+            genre_map = get_genre_map() # Fetch genres once
+            
             for title in recommended_titles:
-                row = find_movie_row(movies_df, title)
-                overview = "No details available."
-                if row is not None:
-                    if method == 'Content-Based Filtering':
-                        overview = row.get("overview", "")
-                        if pd.isna(overview): overview = "No details available."
+                # 1. Try Online First (API)
+                online_ov, online_img, online_genre = fetch_movie_data_online(title, genre_map)
                 
-                safe_title = urllib.parse.quote(title)
-                img_url = f"https://tse2.mm.bing.net/th?q={safe_title}+movie+poster&w=500&h=750&c=7&rs=1&p=0"
+                # 2. Local Fallback
+                row = find_movie_row(movies_df, title)
+                local_ov = row.get("overview", "") if row is not None else ""
+                
+                # 3. Final Selection
+                final_overview = online_ov if online_ov else (local_ov if not pd.isna(local_ov) else "No details available.")
+                
+                if online_img:
+                    final_image = online_img
+                else:
+                    safe_title = urllib.parse.quote(title)
+                    final_image = f"https://tse2.mm.bing.net/th?q={safe_title}+movie+poster&w=500&h=750&c=7&rs=1&p=0"
 
                 result.append({
                     'title': title,
-                    'info': overview,
-                    'image': img_url
+                    'info': final_overview,
+                    'image': final_image,
+                    'genre': online_genre if online_genre else ""
                 })
 
             return result
@@ -1045,12 +1124,15 @@ def main_app():
         
         for i, movie in enumerate(st.session_state.recommendations):
             with cols[i]:
+                # Updated HTML Card to include Genre
+                genre_html = f'<div class="movie-genre">{movie["genre"]}</div>' if movie["genre"] else ""
                 overview_html = f'<div class="movie-overview">{movie["info"]}</div>' if movie["info"] else ""
                 
                 st.markdown(f"""
                 <div class="rec-card" style="background-image: url('{movie['image']}');">
                     <div class="card-content">
                         <div class="movie-title">{movie['title']}</div>
+                        {genre_html}
                         {overview_html}
                     </div>
                 </div>
@@ -1065,7 +1147,10 @@ def main_app():
         export_text = f"G4 SOLUTION Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
         for i, m in enumerate(st.session_state.recommendations, 1):
             export_text += f"{i}. {m['title']}\n"
-            if m['info']: export_text += f"   {m['info']}\n"
+            if m['genre']:
+                export_text += f"   Genre: {m['genre']}\n"
+            if m['info']:
+                export_text += f"   {m['info']}\n"
             export_text += "\n"
         
         st.download_button("📄 Export Results List", data=export_text, file_name="g4_recs.txt", use_container_width=True)
