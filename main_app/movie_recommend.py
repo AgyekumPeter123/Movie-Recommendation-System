@@ -226,16 +226,16 @@ def login_page():
         
         @keyframes moveFromLeft {
             0% { transform: translateX(-100vw); opacity: 0; }
-            10% { transform: translateX(-80vw); opacity: 1; }  /* Fade in quickly while far away */
+            10% { transform: translateX(-80vw); opacity: 1; }  /* Fade in quickly */
             98% { transform: translateX(0); opacity: 1; }      /* Move SLOWLY to center */
-            100% { transform: translateX(0); opacity: 0; }     /* Vanish instantly upon touching */
+            100% { transform: translateX(0); opacity: 0; }     /* Vanish instantly */
         }
 
         @keyframes moveFromRight {
             0% { transform: translateX(100vw); opacity: 0; }
-            10% { transform: translateX(80vw); opacity: 1; }   /* Fade in quickly while far away */
+            10% { transform: translateX(80vw); opacity: 1; }   /* Fade in quickly */
             98% { transform: translateX(0); opacity: 1; }      /* Move SLOWLY to center */
-            100% { transform: translateX(0); opacity: 0; }     /* Vanish instantly upon touching */
+            100% { transform: translateX(0); opacity: 0; }     /* Vanish instantly */
         }
         
         div[data-testid="stVerticalBlock"] > div {
@@ -243,7 +243,7 @@ def login_page():
             position: relative;
         }
 
-        /* === 🔥 FIXED GLASSMORPHISM (UPDATED SELECTOR) === */
+        /* === 🔥 GLASSMORPHISM FOR LOGIN (Applied to Middle Column) === */
         div[data-testid="stHorizontalBlock"] > div:nth-child(2),
         div[data-testid="column"] > div:nth-child(2) {
             background: rgba(255, 255, 255, 0.08);
@@ -524,6 +524,22 @@ def login_page():
 
 # --- MAIN APP LOGIC ---
 def main_app():
+    # === 🛡️ CSS RESET: PREVENT LOGIN STYLES FROM AFFECTING MAIN APP ===
+    st.markdown("""
+        <style>
+        /* Force reset of the glass effect on columns in the main app */
+        div[data-testid="stHorizontalBlock"] > div:nth-child(2),
+        div[data-testid="column"] > div:nth-child(2) {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            box-shadow: none !important;
+            animation: none !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     # --- LOAD DATA ---
     @st.cache_data
     def load_data():
@@ -688,7 +704,8 @@ def main_app():
 
         st.divider()
         
-        # 8. Dark Mode Toggle (FIXED KEY ADDED)
+        # 8. Dark Mode Toggle (FIXED KEY)
+        # Unique key ensures it doesn't reset when history buttons disappear
         dark_mode = st.toggle("🌙 Dark Mode", value=True, key="theme_toggle")
 
     # --- THEME LOGIC ---
