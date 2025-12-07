@@ -4,7 +4,7 @@ G4 SOLUTION is an advanced AI-powered movie recommendation engine developed to h
 
 The project is deployed as an interactive web application using Streamlit, featuring secure user authentication, historical tracking, and deep movie insights including embedded trailers.
 
-![System Architecture](images/systemarchitecture.png)
+![System Architecture](main_app/images/systemarchitecture.png)
 
 🚀 Key Features
 🧠 Recommendation Engines
