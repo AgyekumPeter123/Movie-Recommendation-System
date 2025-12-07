@@ -1,5 +1,5 @@
 import os
-import requests
+import requests  # Ensure requests is installed
 import streamlit as st
 import streamlit.components.v1 as components
 import json
@@ -16,7 +16,8 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
 # --- CONFIGURATION ---
-TMDB_API_KEY = "1a0e50c51630863ed6a140ec12e2bf36"  # Your API Key
+# PLEASE VERIFY THIS KEY IS ACTIVE
+TMDB_API_KEY = "1a0e50c51630863ed6a140ec12e2bf36" 
 
 # --- PAGE CONFIG ---
 st.set_page_config(
@@ -29,8 +30,8 @@ st.set_page_config(
 try:
     from youtube_search import YoutubeSearch
 except ImportError:
-    st.error("⚠️ Library missing. Please stop the app and run: pip install youtube-search")
-    YoutubeSearch = None
+    # Fallback to avoid crashing if library is missing
+    YoutubeSearch = None 
 
 # --- FILE PATHS ---
 USER_DB_FILE = 'user_database.json'
@@ -41,7 +42,7 @@ SMTP_PORT = 587
 SENDER_EMAIL = "agyekumpeter123@gmail.com"
 APP_PASSWORD = "lftr wrba rwsq blst"
 
-# --- AUTHENTICATION FUNCTIONS (UNCHANGED) ---
+# --- AUTHENTICATION FUNCTIONS ---
 def load_db():
     if not os.path.exists(USER_DB_FILE): return {}
     try:
@@ -145,7 +146,6 @@ if 'fp_step' not in st.session_state: st.session_state.fp_step = 1
 
 # --- LOGIN PAGE ---
 def login_page():
-    # Only CSS needed for login
     st.markdown("""
     <style>
         .stApp { background-color: #0e1117; color: white; }
@@ -154,8 +154,8 @@ def login_page():
     </style>
     """, unsafe_allow_html=True)
 
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
         st.markdown('<div class="glass-card"><p class="title-text">G4 SOLUTION CINEMA</p><p>Live API Movie Recommender</p></div>', unsafe_allow_html=True)
         
         tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
@@ -216,25 +216,39 @@ def main_app():
         """Get genre list from TMDb"""
         try:
             url = f"https://api.themoviedb.org/3/genre/movie/list?api_key={TMDB_API_KEY}&language=en-US"
-            data = requests.get(url).json()
+            data = requests.get(url, timeout=5).json()
             return {g['id']: g['name'] for g in data['genres']}
-        except: return {}
+        except: 
+            return {}
 
     def search_movie(query):
         """Search for a movie by name on TMDb"""
         try:
             url = f"https://api.themoviedb.org/3/search/movie?api_key={TMDB_API_KEY}&query={urllib.parse.quote(query)}&page=1"
-            return requests.get(url).json().get('results', [])
-        except: return []
+            return requests.get(url, timeout=5).json().get('results', [])
+        except Exception as e: 
+            st.error(f"Search Error: {e}")
+            return []
 
     def get_tmdb_recommendations(movie_id):
-        """Get recommendations for a specific movie ID"""
+        """Get recommendations with fallback to 'similar'"""
+        results = []
         try:
+            # 1. Try Recommendations Endpoint
             url = f"https://api.themoviedb.org/3/movie/{movie_id}/recommendations?api_key={TMDB_API_KEY}&language=en-US&page=1"
-            data = requests.get(url).json()
-            results = data.get('results', [])[:5] # Top 5
+            data = requests.get(url, timeout=5).json()
+            results = data.get('results', [])
+
+            # 2. If empty, try Similar Endpoint (Fallback)
+            if not results:
+                url_sim = f"https://api.themoviedb.org/3/movie/{movie_id}/similar?api_key={TMDB_API_KEY}&language=en-US&page=1"
+                data_sim = requests.get(url_sim, timeout=5).json()
+                results = data_sim.get('results', [])
+
+            # 3. Limit to top 5
+            results = results[:5]
             
-            # Formatting results
+            # 4. Format Data
             formatted_recs = []
             genre_map = fetch_genres()
             
@@ -242,7 +256,7 @@ def main_app():
                 poster_path = m.get('poster_path')
                 image = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Image"
                 
-                # Get Genres
+                # Get Genres safely
                 g_ids = m.get('genre_ids', [])
                 g_names = [genre_map.get(gid) for gid in g_ids if gid in genre_map]
                 genre_str = " • ".join(g_names[:2]) if g_names else "Genre Unavailable"
@@ -255,7 +269,9 @@ def main_app():
                     'genre': genre_str
                 })
             return formatted_recs
-        except: return []
+        except Exception as e:
+            st.error(f"Recommendation Error: {e}")
+            return []
 
     # --- SIDEBAR ---
     with st.sidebar:
@@ -265,6 +281,19 @@ def main_app():
             st.session_state.logged_in = False
             st.rerun()
         
+        st.divider()
+        
+        # Help Dialog
+        @st.dialog("📚 How to Use")
+        def help_dialog():
+            st.write("1. Type a movie name in the search bar.")
+            st.write("2. Select the correct movie from the dropdown.")
+            st.write("3. Click 'Get Recommendations'.")
+            st.write("4. We fetch live data from TMDb to show you the best matches!")
+            
+        if st.button("❓ How it Works"):
+            help_dialog()
+
         st.divider()
         st.write("### 📜 History")
         if st.button("🗑️ Clear History"):
@@ -291,7 +320,7 @@ def main_app():
         search_results = search_movie(search_query)
         
         if search_results:
-            # Create a dictionary for the selectbox: "Movie Title (Year)" -> Movie ID
+            # Create a dictionary for the selectbox: "Movie Title (Year)" -> Movie Object
             movie_options = {}
             for m in search_results[:10]: # Limit to top 10 matches
                 title = m['title']
@@ -311,7 +340,7 @@ def main_app():
                     st.session_state.recommendations = recs
                     save_user_history(st.session_state.username, selected_label, recs)
         else:
-            st.warning("No movies found. Try a different spelling.")
+            st.warning("No movies found with that name. Please check spelling.")
 
     # 2. Display Results
     if st.session_state.recommendations:
@@ -356,6 +385,10 @@ def main_app():
 
                 if st.button(f"👁️ View {i+1}", key=f"btn_{i}", use_container_width=True):
                     show_details(movie)
+    
+    # Message if recommendations came back empty
+    elif st.session_state.recommendations is not None and len(st.session_state.recommendations) == 0:
+        st.info("No similar recommendations found for this movie. Try a more popular title!")
 
     # --- FOOTER ---
     st.markdown("""
