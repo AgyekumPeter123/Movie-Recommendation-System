@@ -37,9 +37,10 @@ The project is deployed as an interactive web application using Streamlit, featu
 
 
 **Desktop Screens**
+<p float="left">
  <img src="main_app/images/Picture3.png" width="45%" />
   <img src="main_app/images/Picture4.png" width="45%" />
-
+</p>
   
 
 **🚀 Key Features**
