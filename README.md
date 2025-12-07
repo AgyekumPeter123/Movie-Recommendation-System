@@ -22,14 +22,22 @@ The project is deployed as an interactive web application using Streamlit, featu
 
 
 
-**Main Page Screens**
+**Mobile Screens**
 <p float="left">
-  <img src="main_app/images/Picture1.jpg" width="30%" />
-  <img src="main_app/images/Picture2.jpg" width="30%" />
-  <img src="main_app/images/Picture3.png" width="30%" />
+  <img src="main_app/images/Picture1.jpg" width="50%" />
+  <img src="main_app/images/Picture2.jpg" width="50%" />
 </p>
 
-🚀 Key Features
+
+**Desktop Screens**
+ <img src="main_app/images/Picture3.png" width="50%" />
+  <img src="main_app/images/Picture4.png" width="50%" />
+
+  
+
+**🚀 Key Features**
+
+
 🧠 Recommendation Engines
 Content-Based Filtering: Recommends movies by analyzing metadata (plot overviews, genres, keywords, cast, and crew). If you like Avatar, the system analyzes its tags to find similar sci-fi/adventure movies.
 
