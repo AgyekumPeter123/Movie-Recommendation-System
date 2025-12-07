@@ -1,277 +1,109 @@
-G4 SOLUTION – AI Movie Recommender System
-📌 Project Title
+G4 SOLUTION: AI Movie Recommender System
+🎬 Project Description
+G4 SOLUTION is an advanced AI-powered movie recommendation engine developed to help users discover content tailored to their specific tastes. By leveraging a Hybrid Recommendation Approach, the system combines the strengths of Content-Based Filtering and Collaborative Filtering to provide accurate, diverse, and personalized movie suggestions.
 
-G4 SOLUTION – Movie Recommender
+The project is deployed as an interactive web application using Streamlit, featuring secure user authentication, historical tracking, and deep movie insights including embedded trailers.
 
-🎯 Project Purpose
+![System Architecture](images/systemarchitecture.png)
 
-The G4 SOLUTION Movie Recommender System is designed to help users discover movies tailored to their interests. It combines:
+🚀 Key Features
+🧠 Recommendation Engines
+Content-Based Filtering: Recommends movies by analyzing metadata (plot overviews, genres, keywords, cast, and crew). If you like Avatar, the system analyzes its tags to find similar sci-fi/adventure movies.
 
-Content-Based Filtering: Recommends movies similar in genres, overview, cast, crew, and keywords.
+Collaborative Filtering: Analyzes user rating patterns to find similarities between movies based on user preferences. It suggests movies that similar users have rated highly.
 
-Collaborative Filtering: Suggests movies based on rating patterns from users with similar tastes.
+🔐 User Management & Security
+Secure Authentication: Registration and Login system with hashed passwords (SHA256).
 
-The system is deployed as an interactive Streamlit web application featuring user authentication, search history, embedded trailers, and external watch/download links.
+Password Reset: "Forgot Password" functionality utilizing email-based OTP (One-Time Password) verification.
 
-🔗 Hosted App:
-https://movie-recommender-group4.streamlit.app/
+Account Management: Options to clear history or permanently delete accounts.
 
-📘 Table of Contents
+💻 Interactive User Interface
+Movie Details: View high-quality posters, detailed overviews, and genres.
 
-Project Description
+Embedded Trailers: Watch YouTube trailers directly within the recommendation cards without leaving the app.
 
-Key Features
+Smart History: The app tracks your search history, allowing you to view previous recommendations and download them as text files.
 
-Technologies Used
+Dark Mode: Toggle between light and dark themes for visual comfort.
 
-Project Architecture
+External Links: Direct links to download or stream movies on platforms like Netflix, Fzmovies, and Nkiri.
 
-Data Handling
+🛠️ Technical Implementation
+Data Processing (The Notebook)
+The core logic resides in the Jupyter Notebook, which processes raw data into machine learning models:
 
-Installation Guide
+Data Cleaning:
 
-How to Use
+Datasets (tmdb_5000_movies, credits, ratings) are merged.
 
-Data Sources
+Custom functions convert() and convert3() parse stringified JSON columns (like Genres and Keywords).
 
-Team Credits
+fetch_director() extracts the director's name from the Crew column.
 
-📖 Project Description
+Feature Engineering:
 
-This system builds an AI-powered movie recommendation engine using hybrid ML techniques. A polished Streamlit UI allows users to:
+A unified tags column is created by concatenating the Overview, Genres, Keywords, Top 3 Cast, and Director.
 
-Sign up, log in, reset passwords via OTP.
+Text is preprocessed (lowercased, spaces removed) to ensure consistency (e.g., "SciFi" vs "Sci-Fi").
 
-Select a movie and get intelligent recommendations.
+Vectorization & Similarity:
 
-Watch embedded YouTube trailers.
+Content-Based: Uses CountVectorizer to convert the tags into 5000-dimensional vectors.
 
-Access external platforms such as Netflix, MovieBox, Nkiri, and Fzmovies.
+![Content-Based Diagram](images/contentfiltering.png)
 
-Save, view, and download their recommendation history.
+* **Collaborative:** Creates a User-Movie Pivot Table and transposes it.
 
-The machine learning workflow includes metadata extraction, preprocessing, text vectorization, similarity matrix computation, and user rating analysis.
+* **Metric:** `cosine_similarity` is calculated for both engines to measure the angle between vectors, determining how similar two movies are.
+🧰 Tech Stack
+Core Python Libraries:
 
-✨ Key Features
-1. Recommendation Engines
-Content-Based Filtering
+pandas & numpy (Data Manipulation)
 
-Uses:
+scikit-learn (Machine Learning: CountVectorizer, Cosine Similarity)
 
-Overview text
+ast (Data parsing)
 
-Genres
+pickle & gzip (Model serialization)
 
-Keywords
+Web Application:
 
-Top 3 cast
+streamlit (Frontend Framework)
 
-Director
+Youtube (API for fetching trailers)
 
-Tools used:
-CountVectorizer (max_features=5000, stop_words='english') + Cosine Similarity.
+smtplib (Email services for OTP)
 
-Collaborative Filtering
+hashlib (Security)
 
-Uses:
+⚙️ Installation & Setup
+Follow these steps to run the project locally.
 
-User rating patterns from ratings.csv
-
-Item-based similarity via cosine_similarity
-
-2. User Account System
-
-Secure registration
-
-Login
-
-Password reset with email OTP
-
-SHA-256 password hashing
-
-Unique User IDs (UUID)
-
-3. Recommendation History
-
-Automatic history saving
-
-View previous results
-
-Download or clear history
-
-4. Interactive Movie Details
-
-Movie overview
-
-Embedded YouTube trailer via youtube-search
-
-Buttons linking to:
-
-Netflix
-
-Fzmovies
-
-Nkiri
-
-MovieBox
-
-Google search
-
-5. UI/UX Enhancements
-
-Beautiful custom CSS
-
-Typewriter animation
-
-Glassmorphism login page
-
-Dark mode toggle
-
-Organized layout with columns, tabs & dialog popups
-
-🛠 Technologies Used
-Core Python Libraries
-
-pandas
-
-numpy
-
-scikit-learn
-
-ast
-
-pickle
-
-gzip
-
-json
-
-hashlib
-
-re
-
-datetime
-
-uuid
-
-random
-
-string
-
-urllib.parse
-
-Email & OTP
-
-smtplib
-
-email.mime.text
-
-email.mime.multipart
-
-Web App Framework
-
-Streamlit
-
-Extra Tools
-
-youtube-search
-
-Custom HTML/CSS/JS inside Streamlit
-
-🏗 Project Architecture
-project/
-│
-├── movie_recommend.py               # Main Streamlit app
-├── movie_dict.pkl                   # Preprocessed movie metadata
-├── similarity.pkl.gz                # Content-based similarity matrix
-├── collab_similarity.pkl.gz         # Collaborative similarity matrix
-├── collab_titles.pkl                # List of movie titles for collab filtering
-├── user_database.json               # Stores user accounts & history
-│
-├── data/
-│   ├── tmdb_5000_movies.csv
-│   ├── tmdb_5000_credits.csv
-│   ├── ratings.csv
-│   ├── movies.csv
-│
-└── notebook/
-    └── movie_recommender_notebook.ipynb  # Generates model files
-
-📊 Data Handling
-Content-Based Filtering Data
-
-Loaded from:
-
-tmdb_5000_movies.csv
-
-tmdb_5000_credits.csv
-
-Merged on title
-
-Extracted features:
-
-overview
-
-genres
-
-keywords
-
-cast (top 3)
-
-director
-
-Metadata cleaning functions in notebook:
-
-convert() – extract all names
-
-convert3() – extract top 3 cast members
-
-fetch_director() – extract director
-
-A unified tags column is created from all cleaned fields → lowercased → vectorized.
-
-Collaborative Filtering Data
-
-Loaded from:
-
-ratings.csv
-
-movies.csv
-
-Merged into ratings_with_name
-
-Pivoted into user–movie matrix
-
-Transposed for item-based similarity
-
-🚀 Installation Guide
 1. Clone the Repository
-git clone <repository_url>
-cd <repository_directory>
+Bash
 
-2. Create a Virtual Environment
+git clone https://github.com/your-username/G4-Movie-Recommender.git
+cd G4-Movie-Recommender
+2. Set up Virtual Environment
+Bash
+
 python -m venv venv
-venv\Scripts\activate       # Windows
-source venv/bin/activate    # Mac/Linux
-
+source venv/bin/activate  # On macOS/Linux
+venv\Scripts\activate     # On Windows
 3. Install Dependencies
+Bash
+
 pip install -r requirements.txt
+4. Data Setup (Crucial Step)
+The Streamlit app requires pre-trained model files.
 
-4. Add Required Data Files
+Ensure the raw CSV files (tmdb_5000_movies.csv, tmdb_5000_credits.csv, ratings.csv, movies.csv) are in the project folder.
 
-Place these CSV files in your project folder:
+Run the provided Jupyter Notebook (movie_recommender.ipynb) to process the data.
 
-tmdb_5000_movies.csv
-
-tmdb_5000_credits.csv
-
-ratings.csv
-
-movies.csv
-
-5. Generate Model Files
-
-Run the notebook to produce:
+This will generate the following required files:
 
 movie_dict.pkl
 
@@ -281,58 +113,31 @@ collab_similarity.pkl.gz
 
 collab_titles.pkl
 
-Ensure they are placed beside movie_recommend.py.
+5. Configure Email (For OTP)
+To make the "Forgot Password" feature work, update the credentials in movie_recommend.py:
 
-6. Configure Email (OTP System)
+Python
 
-In movie_recommend.py, update:
-
+# movie_recommend.py
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-SENDER_EMAIL = "your_email@gmail.com"
-APP_PASSWORD = "your_app_password"
+SENDER_EMAIL = "your_email@gmail.com"  # Replace with your email
+APP_PASSWORD = "your_app_password"     # Generate an App Password in Gmail settings
+6. Run the App
+Bash
 
-7. Start the Application
 streamlit run movie_recommend.py
-
-
-Your browser opens automatically.
-
-🖥 How to Use
-
-Launch the app
-
-Register / Log In
-
-Choose recommendation engine:
-
-Content-Based
-
-Collaborative
-
-Select a movie
-
-Click Find Recommendations
-
-View details, watch trailer, open external links
-
-Check history in the sidebar
-
-Download or clear history
-
 📂 Data Sources
+TMDB 5000 Movie Dataset: Metadata for content-based filtering (Plot, Cast, Crew).
 
-TMDB 5000 Movie Dataset
-https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata
+MovieLens Dataset: User ratings used for training the collaborative filtering model.
 
-MovieLens Rating Dataset (25M)
-https://grouplens.org/datasets/movielens/
+👥 Team G4 SOLUTION
+Proudly developed by Group 4 for the Thrive Africa Machine Learning & AI Course.
 
-👥 Team Credits – G4 SOLUTION
+Mentor: Big Tamara
 
-Developed under Thrive Africa Machine Learning & AI Program
-
-Contributors
+Team Members:
 
 Peter Agyekum
 
@@ -355,3 +160,5 @@ Maxwell Adu
 Michael Nyarku
 
 Yeboah Eldad
+
+© 2025 G4 SOLUTION. All Rights Reserved.
