@@ -22,16 +22,23 @@ The project is deployed as an interactive web application using Streamlit, featu
 
 
 
+
+
+
 **Mobile Screens**
 <p float="left">
-  <img src="main_app/images/Picture1.jpg" width="50%" />
-  <img src="main_app/images/Picture2.jpg" width="50%" />
+  <img src="main_app/images/Picture1.jpg" width="45%" />
+  <img src="main_app/images/Picture2.jpg" width="45%" />
 </p>
 
 
+
+
+
+
 **Desktop Screens**
- <img src="main_app/images/Picture3.png" width="50%" />
-  <img src="main_app/images/Picture4.png" width="50%" />
+ <img src="main_app/images/Picture3.png" width="45%" />
+  <img src="main_app/images/Picture4.png" width="45%" />
 
   
 
