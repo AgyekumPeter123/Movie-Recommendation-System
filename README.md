@@ -1,6 +1,15 @@
-**G4 SOLUTION**: AI Movie Recommender System
-🎬 Project Description
+***G4 SOLUTION***: AI Movie Recommender System
+
+
+**🎬 Project Description**
 G4 SOLUTION is an advanced AI-powered movie recommendation engine developed to help users discover content tailored to their specific tastes. By leveraging a Hybrid Recommendation Approach, the system combines the strengths of Content-Based Filtering and Collaborative Filtering to provide accurate, diverse, and personalized movie suggestions.
+
+**APP UI**
+**Authentication Screens**
+<p float="left">
+  <img src="main_app/images/signin.jpg" width="45%" />
+  <img src="main_app/images/signup.jpg" width="45%" /> 
+</p>
 
 The project is deployed as an interactive web application using Streamlit, featuring secure user authentication, historical tracking, and deep movie insights including embedded trailers.
 
