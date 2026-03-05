@@ -26,7 +26,7 @@ except ImportError:
 
 # --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="GROUP 7 - Movie Recommender",
+    page_title="GROUP 15 - Movie Recommender",
     layout="wide",
     page_icon="🎥"
 )
@@ -74,12 +74,12 @@ def send_otp_email(receiver_email, otp):
         msg = MIMEMultipart()
         msg['From'] = SENDER_EMAIL
         msg['To'] = receiver_email
-        msg['Subject'] = "🔐 G4 SOLUTION: Password Reset OTP"
+        msg['Subject'] = "🔐 G15 SOLUTION: Password Reset OTP"
 
         body = f"""
         <html>
           <body style="font-family: Arial, sans-serif;">
-            <h2 style="color: #FF4B4B;">GROUP 7 Movie Recommender</h2>
+            <h2 style="color: #FF4B4B;">GROUP 15 Movie Recommender</h2>
             <p>You requested a password reset.</p>
             <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; display: inline-block;">
                 <span style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">{otp}</span>
@@ -365,9 +365,9 @@ def login_page():
 
             <script>
             const phrases = [
-                "GROUP 7 SOLUTION CINEMA",
                 "YOUR BEST AI MOVIE RECOMMENDER",
-                "BY GROUP 7 SOLUTION",
+                "BY GROUP 15 IT LEVEL 400, C CLASS",
+                "PROUDLY SPONSORED BY DAGYES",
                 "PURPOSELY FOR MODERN TRENDS PRESENTATION"
             ];
 
@@ -580,7 +580,7 @@ def main_app():
         return None
     
     # --- 1. NEW FEATURE: HOW IT WORKS DIALOG ---
-    @st.dialog("📚 How to Use G4 Solution")
+    @st.dialog("📚 How to Use The System")
     def show_help_dialog():
         st.markdown("""
         ### 1. Choose Your Engine ⚙️
@@ -610,7 +610,7 @@ def main_app():
             
         st.divider()
         
-        export_string = f"History Export (G4 SOLUTION)\n\nMovie Searched: {selected_movie}\nDate: {date}\n\nRecommendations:\n{display_text}"
+        export_string = f"History Export (G15 SOLUTION)\n\nMovie Searched: {selected_movie}\nDate: {date}\n\nRecommendations:\n{display_text}"
         
         st.download_button(
             label="💾 Download Record",
@@ -690,7 +690,7 @@ def main_app():
                         padding: 10px; border: 2px solid #FF4B4B; border-radius: 15px;
                         background: rgba(255, 75, 75, 0.1); backdrop-filter: blur(5px);
                         margin-bottom: 20px; color: black;">
-                G4 SOLUTION
+                G15 SOLUTION
             </div>
         """, unsafe_allow_html=True)
 
@@ -755,19 +755,18 @@ def main_app():
         # 6. Team & About
         with st.expander("👥 Meet the Team"):
             team = [
-                "1. Peter Agyekum", "2. Felicia I. Nduefuna", "3. Olivia Mawufemor Attipoe",
-                "4. Donkor Promise Esi Rhoda", "5. Osborn Tulasi", "6. Onipayede John Kwaku",
-                "7. Peter Agyekum Boateng", "8. Aning Jason", "9. Maxwell Adu",
-                "10. Michael Nyarku", "11. Yeboah Eldad"
+                "1. Agyemang Afriyie Abigail", "2. Sarfo Collins", "3. Menlah Keziah",
+                "4. Oteng Francis Kofi", "5. Ansu Kwakye Ameyaw Emmanuel", "6. Okae Godwin",
+                "7. Abrafi Selina", "8. Awuye Philip Kwame Dzifa", "9. Mensah Hannah",
             ]
             for member in team:
                 st.write(member)
 
         with st.expander("ℹ️ Details"):
-            st.write("**Group 4 Final Project**")
-            st.write("Course: **Machine Learning & AI**")
-            st.write("Provider: **Thrive Africa**")
-            st.write("Mentor: **Big Tamara**")
+            st.write("**Group 15**")
+            st.write("Course: **Modern Trends**")
+            st.write("Title: **Machine Learning And AI**")
+            st.write("Sponsor: **Dagyes (Hosting and Tech Guidance)**")
 
         st.divider()
 
@@ -813,7 +812,7 @@ def main_app():
             height: 60px;
         }}
         header[data-testid="stHeader"]::after {{
-            content: 'G4 SOLUTION';
+            content: 'G15 SOLUTION';
             color: white;
             font-size: 20px;
             font-weight: 900;
@@ -1101,7 +1100,7 @@ def main_app():
         st.markdown("---")
         st.header("📥 Quick Export")
         
-        export_text = f"G4 SOLUTION Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
+        export_text = f"G15 SOLUTION Recommendations\nSource: {st.session_state.selected_movie_name}\n\n"
         for i, m in enumerate(st.session_state.recommendations, 1):
             export_text += f"{i}. {m['title']}\n"
             if m['info']:
@@ -1113,7 +1112,7 @@ def main_app():
     # --- 2. NEW FEATURE: FOOTER ---
     st.markdown(f"""
     <div class="footer">
-        © 2025 <b>G4 SOLUTION</b> | Powered by G4 Solution, Proudly Emerged from Thrive Africa <br>
+        © 2025 <b>Group 15</b> | Powered by G15 Solution, Proudly Sponsored By Dagyes(Hosting Service and Tech Guidance) <br>
         <i>"Connecting you to the stories you love."</i>
     </div>
     """, unsafe_allow_html=True)
