@@ -26,7 +26,7 @@ except ImportError:
 
 # --- PAGE CONFIG ---
 st.set_page_config(
-    page_title="G4 SOLUTION - Movie Recommender",
+    page_title="GROUP 7 - Movie Recommender",
     layout="wide",
     page_icon="🎥"
 )
@@ -79,7 +79,7 @@ def send_otp_email(receiver_email, otp):
         body = f"""
         <html>
           <body style="font-family: Arial, sans-serif;">
-            <h2 style="color: #FF4B4B;">G4 Solution Movie Recommender</h2>
+            <h2 style="color: #FF4B4B;">GROUP 7 Movie Recommender</h2>
             <p>You requested a password reset.</p>
             <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; display: inline-block;">
                 <span style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">{otp}</span>
@@ -288,7 +288,7 @@ def login_page():
     </style>
 
     <div class="animation-wrapper">
-        <div class="anim-text g4-part">G4</div>
+        <div class="anim-text g4-part">GROUP 7</div>
         <div class="anim-text solution-part">SOLUTION</div>
     </div>
     """, unsafe_allow_html=True)
@@ -365,10 +365,10 @@ def login_page():
 
             <script>
             const phrases = [
-                "G4 SOLUTION CINEMA",
+                "GROUP 7 SOLUTION CINEMA",
                 "YOUR BEST AI MOVIE RECOMMENDER",
-                "BY G4 SOLUTION",
-                "PROUDLY FROM THRIVE AFRICA"
+                "BY GROUP 7 SOLUTION",
+                "PURPOSELY FOR MODERN TRENDS PRESENTATION"
             ];
 
             let i = 0;
