@@ -743,13 +743,11 @@ def main_app():
         st.markdown("### 🚀 Quick Links")
         
         # --- NEW FEATURE: BUTTON FOR DIALOG ---
-        if st.button("❓ How it Works", use_container_width=True):
+        if st.button("❓ How App Works", use_container_width=True):
             show_help_dialog()
             
-        st.link_button("💬 Join WhatsApp Team", "https://chat.whatsapp.com/DsyWXB9DzG19CbTjK8dKhF?mode=hqrt2", use_container_width=True)
+        st.link_button("💬 Join WhatsApp Team", "https://chat.whatsapp.com/LXPX8bVnmo5KZvYxOMxzfi?mode=gi_t", use_container_width=True)
         st.link_button("📂 Access Notebook", "https://colab.research.google.com/drive/1XvRHy3z1cDWH51EuRegY_i-FWH2t2ypn?usp=drive_link", use_container_width=True)
-        st.link_button("📚 Study With Thrive Africa", "https://thriveafrica.co/campus", use_container_width=True)
-
         st.divider()
 
         # 6. Team & About
@@ -1112,7 +1110,7 @@ def main_app():
     # --- 2. NEW FEATURE: FOOTER ---
     st.markdown(f"""
     <div class="footer">
-        © 2025 <b>Group 15</b> | Powered by G15 Solution, Proudly Sponsored By Dagyes(Hosting Service and Tech Guidance) <br>
+        © 2026 <b>Group 15</b> | Powered by G15 IT LEVEL 400 C, Proudly Sponsored By Dagyes(Hosting and Tech Guidance) <br>
         <i>"Connecting you to the stories you love."</i>
     </div>
     """, unsafe_allow_html=True)
