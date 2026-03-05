@@ -682,7 +682,7 @@ def main_app():
     if 'last_method' not in st.session_state:
         st.session_state.last_method = None
 
-    # --- SIDEBAR ---
+                                                                                  # --- SIDEBAR ---
     with st.sidebar:
         # 1. Logo
         st.markdown("""
