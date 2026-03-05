@@ -288,7 +288,7 @@ def login_page():
     </style>
 
     <div class="animation-wrapper">
-        <div class="anim-text g4-part">GROUP 7</div>
+        <div class="anim-text g4-part">G7</div>
         <div class="anim-text solution-part">SOLUTION</div>
     </div>
     """, unsafe_allow_html=True)
